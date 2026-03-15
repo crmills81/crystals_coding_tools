@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MCW Inpatient Profee Toolkit</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
+  /* ===== DARK THEME (default) ===== */
   :root {
     --bg: #12111a;
     --surface: #1e1c2b;
@@ -20,10 +21,33 @@
     --red: #f47474;
     --text: #ece8f8;
     --muted: #8d88ab;
-    --font-main: 'Outfit', sans-serif;
+    --font-main: 'Google Sans', Roboto, sans-serif;
     --font-mono: 'IBM Plex Mono', monospace;
     --radius: 10px;
     --shadow: 0 4px 20px rgba(0,0,0,0.4);
+    --navbar-bg: rgba(18,17,26,0.95);
+    --body-before-bg: radial-gradient(ellipse at 20% 10%, rgba(163,116,247,0.07) 0%, transparent 60%),
+                      radial-gradient(ellipse at 80% 80%, rgba(61,214,200,0.04) 0%, transparent 50%);
+  }
+
+  /* ===== LIGHT THEME ===== */
+  :root.light {
+    --bg: #f3f1f9;
+    --surface: #ffffff;
+    --surface2: #ede9f7;
+    --border: #d4cce8;
+    --primary: #6e3fcc;
+    --primary-dark: #5530a8;
+    --primary-glow: rgba(110,63,204,0.1);
+    --gold: #9a6f00;
+    --teal: #0f8a7e;
+    --red: #c0392b;
+    --text: #1a1630;
+    --muted: #6b6488;
+    --shadow: 0 4px 20px rgba(80,60,140,0.1);
+    --navbar-bg: rgba(243,241,249,0.97);
+    --body-before-bg: radial-gradient(ellipse at 20% 10%, rgba(110,63,204,0.05) 0%, transparent 60%),
+                      radial-gradient(ellipse at 80% 80%, rgba(15,138,126,0.04) 0%, transparent 50%);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -32,9 +56,10 @@
     background-color: var(--bg);
     color: var(--text);
     font-family: var(--font-main);
-    font-size: 15px;
+    font-size: 16px;
     line-height: 1.6;
     min-height: 100vh;
+    transition: background-color 0.25s, color 0.25s;
   }
 
   /* Background texture */
@@ -42,8 +67,7 @@
     content: '';
     position: fixed;
     inset: 0;
-    background: radial-gradient(ellipse at 20% 10%, rgba(163,116,247,0.07) 0%, transparent 60%),
-                radial-gradient(ellipse at 80% 80%, rgba(61,214,200,0.04) 0%, transparent 50%);
+    background: var(--body-before-bg);
     pointer-events: none;
     z-index: 0;
   }
@@ -53,7 +77,7 @@
     position: sticky;
     top: 0;
     z-index: 200;
-    background: rgba(18,17,26,0.95);
+    background: var(--navbar-bg);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
     display: flex;
@@ -699,12 +723,46 @@
 
   textarea { resize: vertical; min-height: 80px; }
 
+  /* ===== THEME TOGGLE ===== */
+  .theme-toggle {
+    margin-left: auto;
+    padding: 7px 13px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    color: var(--muted);
+    font-size: 0.78em;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    font-family: var(--font-main);
+    transition: all 0.2s;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .theme-toggle:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-glow); }
+  .theme-toggle .toggle-icon { font-size: 1.1em; }
+
+  /* Light mode overrides for elements that need explicit color fixes */
+  :root.light .cpt-table td { color: var(--text); }
+  :root.light .mod-card { background: var(--surface); }
+  :root.light .flow-node { background: var(--surface); }
+  :root.light .flow-node.decision { background: var(--surface2); }
+  :root.light .poa-card { background: var(--surface); }
+  :root.light select option { background: var(--surface); color: var(--text); }
+  :root.light .query-output { background: var(--surface2); color: var(--text); }
+  :root.light .fc-front { background: var(--surface); }
+  :root.light .navbar a.ext-link { color: var(--gold); }
+
   @media (max-width: 520px) {
     .poa-grid { grid-template-columns: 1fr; }
     .poa-card.exempt { grid-column: 1; }
     .flow-branches { grid-template-columns: 1fr; }
     .navbar a { padding: 10px 9px; font-size: 0.76em; }
     .nav-brand { display: none; }
+    .theme-toggle { padding: 7px 9px; }
   }
 </style>
 </head>
@@ -721,6 +779,7 @@
   <a class="nav-link" onclick="showPage(event,'pg-query')">Query Gen</a>
   <a class="nav-link" onclick="showPage(event,'pg-flash')">Flashcards</a>
   <a class="nav-link ext-link" href="https://crmills81.github.io/MCW_Coder_Hub/" target="_blank">MCW Hub ↗</a>
+  <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn"><span class="toggle-icon">☀️</span> Light</button>
 </nav>
 
 <div class="container">
@@ -1213,6 +1272,28 @@
 </div><!-- /container -->
 
 <script>
+// ===== THEME TOGGLE =====
+function toggleTheme() {
+  const root = document.documentElement;
+  const btn = document.getElementById('themeBtn');
+  const isLight = root.classList.toggle('light');
+  btn.innerHTML = isLight
+    ? '<span class="toggle-icon">🌙</span> Dark'
+    : '<span class="toggle-icon">☀️</span> Light';
+  localStorage.setItem('profee-theme', isLight ? 'light' : 'dark');
+}
+// Restore saved preference on load
+(function() {
+  if (localStorage.getItem('profee-theme') === 'light') {
+    document.documentElement.classList.add('light');
+    // Button text set after DOM ready
+    window.addEventListener('DOMContentLoaded', () => {
+      const btn = document.getElementById('themeBtn');
+      if (btn) btn.innerHTML = '<span class="toggle-icon">🌙</span> Dark';
+    });
+  }
+})();
+
 // ===== NAVIGATION =====
 function showPage(event, pageId) {
   if (event.target.classList.contains('ext-link')) return;
