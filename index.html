@@ -3,146 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inpatient Profee Coder Assistant</title>
+    <title>Profee Coding Toolkit</title>
     <style>
+        /* Base Styles */
         body { 
             font-family: Arial, sans-serif; 
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Navigation Bar Styles */
+        .navbar {
+            background-color: #2c3e50;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .navbar a {
+            color: white;
+            text-align: center;
+            padding: 14px 20px;
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .navbar a:hover {
+            background-color: #1a252f;
+        }
+        .navbar a.active {
+            background-color: #2980b9;
+        }
+
+        /* Main Container */
+        .container {
             padding: 20px; 
             max-width: 600px; 
             margin: auto; 
-            background-color: #f4f7f6;
-            color: #333;
         }
-        h2 { 
-            color: #2c3e50; 
-            text-align: center;
+
+        /* Page View Logic */
+        .page-view {
+            display: none; /* Hides all pages by default */
         }
-        .section { 
-            background-color: white;
-            margin-bottom: 20px; 
-            padding: 20px; 
-            border: 1px solid #ddd; 
-            border-radius: 8px; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        .page-view.active {
+            display: block; /* Shows the active page */
         }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label { 
-            font-weight: bold;
-            display: block; 
-            margin-bottom: 8px; 
-        }
-        select, input[type="number"] {
-            width: 100%;
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            font-size: 16px;
-            box-sizing: border-box;
-        }
-        .radio-group label {
-            font-weight: normal;
-            display: inline-block;
-            margin-right: 15px;
-            cursor: pointer;
-        }
-        .note {
-            font-size: 0.85em;
-            color: #7f8c8d;
-            margin-top: 5px;
-            font-style: italic;
-        }
-        button { 
-            width: 100%;
-            padding: 15px; 
-            background-color: #2980b9; 
-            color: white; 
-            border: none; 
-            border-radius: 5px; 
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer; 
-            transition: background 0.3s;
-        }
-        button:hover { 
-            background-color: #1c5980; 
-        }
-        #result { 
-            margin-top: 20px; 
-            font-weight: bold; 
-            font-size: 1.2em; 
-            text-align: center;
-            padding: 20px;
-            border-radius: 5px;
-            display: none;
-        }
-        .success {
-            background-color: #e8f8f5;
-            border: 2px solid #27ae60;
-            color: #27ae60;
-        }
-        .error {
-            background-color: #fdebd0;
-            border: 2px solid #e67e22;
-            color: #d35400;
-        }
+
+        /* Tool Styles (From previous code) */
+        h2 { color: #2c3e50; text-align: center; }
+        .section { background-color: white; margin-bottom: 20px; padding: 20px; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .form-group { margin-bottom: 15px; }
+        label { font-weight: bold; display: block; margin-bottom: 8px; }
+        select, input[type="number"] { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; box-sizing: border-box; }
+        .radio-group label { font-weight: normal; display: inline-block; margin-right: 15px; cursor: pointer; }
+        .note { font-size: 0.85em; color: #7f8c8d; margin-top: 5px; font-style: italic; }
+        button { width: 100%; padding: 15px; background-color: #2980b9; color: white; border: none; border-radius: 5px; font-size: 18px; font-weight: bold; cursor: pointer; transition: background 0.3s; }
+        button:hover { background-color: #1c5980; }
+        .result-box { margin-top: 20px; font-weight: bold; font-size: 1.2em; text-align: center; padding: 20px; border-radius: 5px; display: none; }
+        .success { background-color: #e8f8f5; border: 2px solid #27ae60; color: #27ae60; }
+        .error { background-color: #fdebd0; border: 2px solid #e67e22; color: #d35400; }
+        
+        /* Placeholder Styles */
+        .coming-soon { text-align: center; padding: 40px; background: white; border-radius: 8px; border: 2px dashed #bdc3c7; color: #7f8c8d; }
     </style>
 </head>
 <body>
 
-    <h2>Inpatient Profee Coder Assistant</h2>
-
-    <div class="section">
-        <div class="form-group">
-            <label for="encounterType">Encounter Type:</label>
-            <select id="encounterType" onchange="updateUI()">
-                <option value="initial">Initial Hospital Care (99221-99223)</option>
-                <option value="subsequent">Subsequent Hospital Care (99231-99233)</option>
-                <option value="sameDay">Same-Day Admit & Discharge (99234-99236)</option>
-                <option value="discharge">Hospital Discharge Day Mgmt (99238-99239)</option>
-            </select>
-            <div id="encounterNote" class="note"></div>
-        </div>
-
-        <div class="form-group" id="payerGroup">
-            <label>Payer Type (Affects Prolonged Services):</label>
-            <div class="radio-group">
-                <label><input type="radio" name="payer" value="ama" checked> Commercial / AMA</label>
-                <label><input type="radio" name="payer" value="cms"> Medicare / CMS</label>
-            </div>
-        </div>
+    <div class="navbar">
+        <a class="nav-link active" onclick="showPage(event, 'inpatient-tool')">Inpatient Calc</a>
+        <a class="nav-link" onclick="showPage(event, 'ed-tool')">ED Leveling</a>
+        <a class="nav-link" onclick="showPage(event, 'modifier-tool')">Modifiers</a>
+        <a class="nav-link" onclick="showPage(event, 'cic-tool')">CIC Flashcards</a>
     </div>
 
-    <div class="section">
-        <div class="form-group">
-            <label>Select Coding Method:</label>
-            <div class="radio-group">
-                <label><input type="radio" name="method" value="mdm" id="radioMdm" checked onchange="toggleMethod()"> Medical Decision Making (MDM)</label>
-                <label><input type="radio" name="method" value="time" id="radioTime" onchange="toggleMethod()"> Total Time</label>
+    <div class="container">
+
+        <div id="inpatient-tool" class="page-view active">
+            <h2>Inpatient Profee Assistant</h2>
+
+            <div class="section">
+                <div class="form-group">
+                    <label for="encounterType">Encounter Type:</label>
+                    <select id="encounterType" onchange="updateUI()">
+                        <option value="initial">Initial Hospital Care (99221-99223)</option>
+                        <option value="subsequent">Subsequent Hospital Care (99231-99233)</option>
+                        <option value="sameDay">Same-Day Admit & Discharge (99234-99236)</option>
+                        <option value="discharge">Hospital Discharge Day Mgmt (99238-99239)</option>
+                    </select>
+                    <div id="encounterNote" class="note"></div>
+                </div>
+
+                <div class="form-group" id="payerGroup">
+                    <label>Payer Type (Affects Prolonged Services):</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="payer" value="ama" checked> Commercial / AMA</label>
+                        <label><input type="radio" name="payer" value="cms"> Medicare / CMS</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="form-group">
+                    <label>Select Coding Method:</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="method" value="mdm" id="radioMdm" checked onchange="toggleMethod()"> Medical Decision Making (MDM)</label>
+                        <label><input type="radio" name="method" value="time" id="radioTime" onchange="toggleMethod()"> Total Time</label>
+                    </div>
+                </div>
+
+                <div id="mdmSection" class="form-group">
+                    <label for="mdmLevel">MDM Level:</label>
+                    <select id="mdmLevel">
+                        <option value="low">Straightforward or Low</option>
+                        <option value="moderate">Moderate</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+
+                <div id="timeSection" class="form-group" style="display:none;">
+                    <label for="timeMinutes">Total Time on Date of Encounter (Minutes):</label>
+                    <input type="number" id="timeMinutes" placeholder="e.g., 85" min="0">
+                </div>
+            </div>
+
+            <button onclick="calculateCPT()">Calculate CPT Code</button>
+            <div id="result" class="result-box"></div>
+        </div>
+
+        <div id="ed-tool" class="page-view">
+            <h2>Emergency Dept Leveling</h2>
+            <div class="coming-soon">
+                <h3>🚧 Under Construction 🚧</h3>
+                <p>We will build out the MDM grid for 99281-99285 here next!</p>
             </div>
         </div>
 
-        <div id="mdmSection" class="form-group">
-            <label for="mdmLevel">MDM Level:</label>
-            <select id="mdmLevel">
-                <option value="low">Straightforward or Low</option>
-                <option value="moderate">Moderate</option>
-                <option value="high">High</option>
-            </select>
+        <div id="modifier-tool" class="page-view">
+            <h2>Modifier Cheat Sheet</h2>
+            <div class="coming-soon">
+                <h3>🚧 Under Construction 🚧</h3>
+                <p>Quick reference guide for modifiers 25, 59, 91, and more coming soon.</p>
+            </div>
         </div>
 
-        <div id="timeSection" class="form-group" style="display:none;">
-            <label for="timeMinutes">Total Time on Date of Encounter (Minutes):</label>
-            <input type="number" id="timeMinutes" placeholder="e.g., 85" min="0">
+        <div id="cic-tool" class="page-view">
+            <h2>CIC Exam Flashcards</h2>
+            <div class="coming-soon">
+                <h3>🚧 Under Construction 🚧</h3>
+                <p>Interactive study tool for complex inpatient facility cases coming soon.</p>
+            </div>
         </div>
+
     </div>
-
-    <button onclick="calculateCPT()">Calculate CPT Code</button>
-
-    <div id="result"></div>
 
     <script>
+        // --- NAVIGATION LOGIC ---
+        function showPage(event, pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page-view').forEach(page => page.classList.remove('active'));
+            // Remove active highlight from all nav buttons
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            
+            // Show the selected page
+            document.getElementById(pageId).classList.add('active');
+            // Add active highlight to the clicked button
+            event.target.classList.add('active');
+        }
+
+        // --- INPATIENT CALCULATOR LOGIC ---
         function updateUI() {
             const type = document.getElementById('encounterType').value;
             const radioMdm = document.getElementById('radioMdm');
@@ -150,7 +183,6 @@
             const note = document.getElementById('encounterNote');
             const payerGroup = document.getElementById('payerGroup');
 
-            // Reset notes
             note.innerText = "";
             payerGroup.style.display = "block";
 
@@ -218,9 +250,8 @@
                 let prolongedUnits = 0;
 
                 if (type === 'initial') {
-                    if (time < 40) {
-                        isError = true; output = "Time does not meet the 40-minute minimum for 99221.";
-                    } else if (time <= 54) baseCode = "99221";
+                    if (time < 40) { isError = true; output = "Time does not meet the 40-minute minimum for 99221."; }
+                    else if (time <= 54) baseCode = "99221";
                     else if (time <= 74) baseCode = "99222";
                     else {
                         baseCode = "99223";
@@ -228,9 +259,8 @@
                         else if (payer === 'cms' && time >= 105) { prolongedUnits = Math.floor((time - 90) / 15); prolongedCode = "G0316"; }
                     }
                 } else if (type === 'subsequent') {
-                    if (time < 25) {
-                        isError = true; output = "Time does not meet the 25-minute minimum for 99231.";
-                    } else if (time <= 34) baseCode = "99231";
+                    if (time < 25) { isError = true; output = "Time does not meet the 25-minute minimum for 99231."; }
+                    else if (time <= 34) baseCode = "99231";
                     else if (time <= 49) baseCode = "99232";
                     else {
                         baseCode = "99233";
@@ -238,9 +268,8 @@
                         else if (payer === 'cms' && time >= 80) { prolongedUnits = Math.floor((time - 65) / 15); prolongedCode = "G0316"; }
                     }
                 } else if (type === 'sameDay') {
-                    if (time < 45) {
-                        isError = true; output = "Time does not meet the 45-minute minimum for 99234. Consider Initial Hospital Care if stay was under 8 hours.";
-                    } else if (time <= 69) baseCode = "99234";
+                    if (time < 45) { isError = true; output = "Time does not meet the 45-minute minimum for 99234. Consider Initial Hospital Care if stay was under 8 hours."; }
+                    else if (time <= 69) baseCode = "99234";
                     else if (time <= 84) baseCode = "99235";
                     else {
                         baseCode = "99236";
@@ -268,9 +297,9 @@
             resultBox.innerHTML = text;
             resultBox.style.display = 'block';
             if (isError) {
-                resultBox.className = 'error';
+                resultBox.className = 'result-box error';
             } else {
-                resultBox.className = 'success';
+                resultBox.className = 'result-box success';
             }
         }
 
