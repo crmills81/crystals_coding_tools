@@ -47,6 +47,12 @@
             margin-right: 15px;
             cursor: pointer;
         }
+        .note {
+            font-size: 0.85em;
+            color: #7f8c8d;
+            margin-top: 5px;
+            font-style: italic;
+        }
         button { 
             width: 100%;
             padding: 15px; 
@@ -90,13 +96,16 @@
     <div class="section">
         <div class="form-group">
             <label for="encounterType">Encounter Type:</label>
-            <select id="encounterType">
+            <select id="encounterType" onchange="updateUI()">
                 <option value="initial">Initial Hospital Care (99221-99223)</option>
                 <option value="subsequent">Subsequent Hospital Care (99231-99233)</option>
+                <option value="sameDay">Same-Day Admit & Discharge (99234-99236)</option>
+                <option value="discharge">Hospital Discharge Day Mgmt (99238-99239)</option>
             </select>
+            <div id="encounterNote" class="note"></div>
         </div>
 
-        <div class="form-group">
+        <div class="form-group" id="payerGroup">
             <label>Payer Type (Affects Prolonged Services):</label>
             <div class="radio-group">
                 <label><input type="radio" name="payer" value="ama" checked> Commercial / AMA</label>
@@ -109,8 +118,8 @@
         <div class="form-group">
             <label>Select Coding Method:</label>
             <div class="radio-group">
-                <label><input type="radio" name="method" value="mdm" checked onchange="toggleMethod()"> Medical Decision Making (MDM)</label>
-                <label><input type="radio" name="method" value="time" onchange="toggleMethod()"> Total Time</label>
+                <label><input type="radio" name="method" value="mdm" id="radioMdm" checked onchange="toggleMethod()"> Medical Decision Making (MDM)</label>
+                <label><input type="radio" name="method" value="time" id="radioTime" onchange="toggleMethod()"> Total Time</label>
             </div>
         </div>
 
@@ -134,6 +143,32 @@
     <div id="result"></div>
 
     <script>
+        function updateUI() {
+            const type = document.getElementById('encounterType').value;
+            const radioMdm = document.getElementById('radioMdm');
+            const radioTime = document.getElementById('radioTime');
+            const note = document.getElementById('encounterNote');
+            const payerGroup = document.getElementById('payerGroup');
+
+            // Reset notes
+            note.innerText = "";
+            payerGroup.style.display = "block";
+
+            if (type === 'discharge') {
+                radioTime.checked = true;
+                radioMdm.disabled = true;
+                note.innerText = "*Discharge Day Management is based entirely on time, not MDM. Prolonged codes do not apply.";
+                payerGroup.style.display = "none";
+                toggleMethod();
+            } else {
+                radioMdm.disabled = false;
+                if (type === 'sameDay') {
+                    note.innerText = "*CMS requires an 8 to 24-hour stay for these codes. If less than 8 hours, bill Initial Hospital Care.";
+                }
+                toggleMethod();
+            }
+        }
+
         function toggleMethod() {
             const method = document.querySelector('input[name="method"]:checked').value;
             if (method === 'mdm') {
@@ -160,10 +195,14 @@
                     if (mdm === 'low') output = "99221";
                     else if (mdm === 'moderate') output = "99222";
                     else if (mdm === 'high') output = "99223";
-                } else {
+                } else if (type === 'subsequent') {
                     if (mdm === 'low') output = "99231";
                     else if (mdm === 'moderate') output = "99232";
                     else if (mdm === 'high') output = "99233";
+                } else if (type === 'sameDay') {
+                    if (mdm === 'low') output = "99234";
+                    else if (mdm === 'moderate') output = "99235";
+                    else if (mdm === 'high') output = "99236";
                 }
                 output = "Suggested CPT (Based on MDM): " + output;
             } else {
@@ -180,36 +219,37 @@
 
                 if (type === 'initial') {
                     if (time < 40) {
-                        isError = true;
-                        output = "Time does not meet the 40-minute minimum for 99221.";
+                        isError = true; output = "Time does not meet the 40-minute minimum for 99221.";
                     } else if (time <= 54) baseCode = "99221";
                     else if (time <= 74) baseCode = "99222";
                     else {
                         baseCode = "99223";
-                        if (payer === 'ama' && time >= 90) {
-                            prolongedUnits = Math.floor((time - 75) / 15);
-                            prolongedCode = "99418";
-                        } else if (payer === 'cms' && time >= 105) {
-                            prolongedUnits = Math.floor((time - 90) / 15);
-                            prolongedCode = "G0316";
-                        }
+                        if (payer === 'ama' && time >= 90) { prolongedUnits = Math.floor((time - 75) / 15); prolongedCode = "99418"; }
+                        else if (payer === 'cms' && time >= 105) { prolongedUnits = Math.floor((time - 90) / 15); prolongedCode = "G0316"; }
                     }
-                } else { // Subsequent
+                } else if (type === 'subsequent') {
                     if (time < 25) {
-                        isError = true;
-                        output = "Time does not meet the 25-minute minimum for 99231.";
+                        isError = true; output = "Time does not meet the 25-minute minimum for 99231.";
                     } else if (time <= 34) baseCode = "99231";
                     else if (time <= 49) baseCode = "99232";
                     else {
                         baseCode = "99233";
-                        if (payer === 'ama' && time >= 65) {
-                            prolongedUnits = Math.floor((time - 50) / 15);
-                            prolongedCode = "99418";
-                        } else if (payer === 'cms' && time >= 80) {
-                            prolongedUnits = Math.floor((time - 65) / 15);
-                            prolongedCode = "G0316";
-                        }
+                        if (payer === 'ama' && time >= 65) { prolongedUnits = Math.floor((time - 50) / 15); prolongedCode = "99418"; }
+                        else if (payer === 'cms' && time >= 80) { prolongedUnits = Math.floor((time - 65) / 15); prolongedCode = "G0316"; }
                     }
+                } else if (type === 'sameDay') {
+                    if (time < 45) {
+                        isError = true; output = "Time does not meet the 45-minute minimum for 99234. Consider Initial Hospital Care if stay was under 8 hours.";
+                    } else if (time <= 69) baseCode = "99234";
+                    else if (time <= 84) baseCode = "99235";
+                    else {
+                        baseCode = "99236";
+                        if (payer === 'ama' && time >= 100) { prolongedUnits = Math.floor((time - 85) / 15); prolongedCode = "99418"; }
+                        else if (payer === 'cms' && time >= 110) { prolongedUnits = Math.floor((time - 95) / 15); prolongedCode = "G0316"; }
+                    }
+                } else if (type === 'discharge') {
+                    if (time <= 30) baseCode = "99238";
+                    else baseCode = "99239";
                 }
 
                 if (!isError) {
@@ -233,6 +273,9 @@
                 resultBox.className = 'success';
             }
         }
+
+        // Initialize UI on load
+        updateUI();
     </script>
 </body>
 </html>
