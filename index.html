@@ -5,13 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profee Coding Toolkit</title>
     <style>
-        /* Base Styles */
+        /* Base Styles with Google Sans */
         body { 
-            font-family: Arial, sans-serif; 
+            font-family: 'Google Sans', Roboto, Arial, sans-serif; 
             background-color: #f4f7f6;
             color: #333;
             margin: 0;
             padding: 0;
+            line-height: 1.5;
         }
         
         /* Navigation Bar Styles */
@@ -22,6 +23,9 @@
             justify-content: center;
             flex-wrap: wrap;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
         .navbar a {
             color: white;
@@ -47,29 +51,54 @@
         }
 
         /* Page View Logic */
-        .page-view {
-            display: none; /* Hides all pages by default */
-        }
-        .page-view.active {
-            display: block; /* Shows the active page */
+        .page-view { display: none; }
+        .page-view.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Tool Styles (From previous code) */
+        /* Tool Styles */
         h2 { color: #2c3e50; text-align: center; }
         .section { background-color: white; margin-bottom: 20px; padding: 20px; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .form-group { margin-bottom: 15px; }
-        label { font-weight: bold; display: block; margin-bottom: 8px; }
-        select, input[type="number"] { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; box-sizing: border-box; }
-        .radio-group label { font-weight: normal; display: inline-block; margin-right: 15px; cursor: pointer; }
+        label { font-weight: bold; display: block; margin-bottom: 8px; color: #2c3e50; }
+        select, input[type="number"], input[type="text"] { width: 100%; padding: 12px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; box-sizing: border-box; font-family: inherit; }
+        select:focus, input:focus { outline: none; border-color: #2980b9; box-shadow: 0 0 5px rgba(41, 128, 185, 0.3); }
+        .radio-group label { font-weight: normal; display: inline-block; margin-right: 15px; cursor: pointer; color: #333; }
         .note { font-size: 0.85em; color: #7f8c8d; margin-top: 5px; font-style: italic; }
-        button { width: 100%; padding: 15px; background-color: #2980b9; color: white; border: none; border-radius: 5px; font-size: 18px; font-weight: bold; cursor: pointer; transition: background 0.3s; }
+        
+        button { width: 100%; padding: 15px; background-color: #2980b9; color: white; border: none; border-radius: 5px; font-size: 18px; font-weight: bold; cursor: pointer; transition: background 0.3s; font-family: inherit; }
         button:hover { background-color: #1c5980; }
+        
         .result-box { margin-top: 20px; font-weight: bold; font-size: 1.2em; text-align: center; padding: 20px; border-radius: 5px; display: none; }
         .success { background-color: #e8f8f5; border: 2px solid #27ae60; color: #27ae60; }
         .error { background-color: #fdebd0; border: 2px solid #e67e22; color: #d35400; }
         
-        /* Placeholder Styles */
-        .coming-soon { text-align: center; padding: 40px; background: white; border-radius: 8px; border: 2px dashed #bdc3c7; color: #7f8c8d; }
+        /* Modifier Dictionary Styles */
+        .mod-search { margin-bottom: 20px; }
+        .mod-card { background: white; border-left: 5px solid #2980b9; padding: 15px; margin-bottom: 15px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .mod-card h3 { margin: 0 0 5px 0; color: #2c3e50; display: flex; align-items: center; justify-content: space-between; }
+        .mod-badge { background: #e8f8f5; color: #27ae60; padding: 3px 8px; border-radius: 12px; font-size: 0.8em; font-weight: bold; }
+        .mod-card p { margin: 0; font-size: 0.95em; color: #555; }
+        .hidden { display: none !important; }
+
+        /* Flashcard Styles */
+        .flashcard-container { perspective: 1000px; margin: 20px auto; width: 100%; height: 320px; cursor: pointer; }
+        .flashcard-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.6s; transform-style: preserve-3d; }
+        .flashcard-container.flipped .flashcard-inner { transform: rotateY(180deg); }
+        .flashcard-front, .flashcard-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px; box-sizing: border-box; border-radius: 12px; box-shadow: 0 6px 12px rgba(0,0,0,0.1); border: 2px solid #2980b9; }
+        .flashcard-front { background-color: white; color: #2c3e50; }
+        .flashcard-back { background-color: #2980b9; color: white; transform: rotateY(180deg); }
+        .flashcard-front h3 { margin-bottom: 15px; font-size: 1.3em; }
+        .flashcard-back h3 { margin-bottom: 15px; color: #f1c40f; }
+        .flashcard-text { font-size: 1.1em; }
+        .flashcard-controls { display: flex; justify-content: space-between; margin-top: 20px; }
+        .flashcard-btn { width: 48%; padding: 12px; background-color: #2c3e50; font-size: 16px; border-radius: 8px; }
+        .card-counter { text-align: center; margin-top: 15px; color: #7f8c8d; font-weight: bold; }
+        .hint { font-size: 0.85em; color: #95a5a6; margin-top: 20px; font-style: italic; }
+        .flashcard-back .hint { color: #ecf0f1; }
     </style>
 </head>
 <body>
@@ -85,7 +114,6 @@
 
         <div id="inpatient-tool" class="page-view active">
             <h2>Inpatient Profee Assistant</h2>
-
             <div class="section">
                 <div class="form-group">
                     <label for="encounterType">Encounter Type:</label>
@@ -97,7 +125,6 @@
                     </select>
                     <div id="encounterNote" class="note"></div>
                 </div>
-
                 <div class="form-group" id="payerGroup">
                     <label>Payer Type (Affects Prolonged Services):</label>
                     <div class="radio-group">
@@ -131,32 +158,69 @@
                 </div>
             </div>
 
-            <button onclick="calculateCPT()">Calculate CPT Code</button>
+            <button onclick="calculateCPT()">Calculate Inpatient CPT</button>
             <div id="result" class="result-box"></div>
         </div>
 
         <div id="ed-tool" class="page-view">
             <h2>Emergency Dept Leveling</h2>
-            <div class="coming-soon">
-                <h3>🚧 Under Construction 🚧</h3>
-                <p>We will build out the MDM grid for 99281-99285 here next!</p>
+            <div class="section">
+                <p class="note" style="margin-bottom: 15px;">*Per AMA E/M guidelines, time is not a descriptive component for Emergency Department levels. Codes are leveled solely on MDM.</p>
+                <div class="form-group">
+                    <label for="edMdmLevel">Medical Decision Making (MDM) Level:</label>
+                    <select id="edMdmLevel">
+                        <option value="none">May not require presence of physician/QHP</option>
+                        <option value="straightforward">Straightforward</option>
+                        <option value="low">Low</option>
+                        <option value="moderate">Moderate</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
             </div>
+            <button onclick="calculateED()">Calculate ED Code</button>
+            <div id="edResult" class="result-box"></div>
         </div>
 
         <div id="modifier-tool" class="page-view">
-            <h2>Modifier Cheat Sheet</h2>
-            <div class="coming-soon">
-                <h3>🚧 Under Construction 🚧</h3>
-                <p>Quick reference guide for modifiers 25, 59, 91, and more coming soon.</p>
+            <h2>Modifier Quick Reference</h2>
+            <div class="mod-search">
+                <input type="text" id="modSearchInput" onkeyup="filterModifiers()" placeholder="Search by number or keyword (e.g., '25' or 'unrelated')...">
+            </div>
+            <div id="modifierList">
+                <div class="mod-card"><h3>25 <span class="mod-badge">E/M</span></h3><p>Significant, Separately Identifiable Evaluation and Management Service by the Same Physician on the Same Day of the Procedure or Other Service.</p></div>
+                <div class="mod-card"><h3>24 <span class="mod-badge">E/M</span></h3><p>Unrelated Evaluation and Management Service by the Same Physician During a Postoperative Period.</p></div>
+                <div class="mod-card"><h3>59 <span class="mod-badge">Procedure</span></h3><p>Distinct Procedural Service. Indicates that a procedure or service was distinct or independent from other non-E/M services performed on the same day.</p></div>
+                <div class="mod-card"><h3>XE <span class="mod-badge">CMS / X-Mod</span></h3><p>Separate Encounter. A service that is distinct because it occurred during a separate encounter.</p></div>
+                <div class="mod-card"><h3>XS <span class="mod-badge">CMS / X-Mod</span></h3><p>Separate Structure. A service that is distinct because it was performed on a separate organ/structure.</p></div>
+                <div class="mod-card"><h3>XP <span class="mod-badge">CMS / X-Mod</span></h3><p>Separate Practitioner. A service that is distinct because it was performed by a different practitioner.</p></div>
+                <div class="mod-card"><h3>XU <span class="mod-badge">CMS / X-Mod</span></h3><p>Unusual Non-Overlapping Service. A service that is distinct because it does not overlap usual components of the main service.</p></div>
+                <div class="mod-card"><h3>26 <span class="mod-badge">Professional</span></h3><p>Professional Component. Used when reporting only the physician's interpretation/work.</p></div>
             </div>
         </div>
 
         <div id="cic-tool" class="page-view">
             <h2>CIC Exam Flashcards</h2>
-            <div class="coming-soon">
-                <h3>🚧 Under Construction 🚧</h3>
-                <p>Interactive study tool for complex inpatient facility cases coming soon.</p>
+            
+            <div class="flashcard-container" id="flashcardContainer" onclick="flipCard()">
+                <div class="flashcard-inner">
+                    <div class="flashcard-front">
+                        <h3>Question</h3>
+                        <div class="flashcard-text" id="flashcardQuestion">Loading...</div>
+                        <div class="hint">Tap card to reveal answer</div>
+                    </div>
+                    <div class="flashcard-back">
+                        <h3>Answer</h3>
+                        <div class="flashcard-text" id="flashcardAnswer">Loading...</div>
+                        <div class="hint">Tap card to flip back</div>
+                    </div>
+                </div>
             </div>
+
+            <div class="flashcard-controls">
+                <button class="flashcard-btn" onclick="prevCard()">&#8592; Previous</button>
+                <button class="flashcard-btn" onclick="nextCard()">Next &#8594;</button>
+            </div>
+            <div class="card-counter" id="cardCounter">Card 1 of X</div>
         </div>
 
     </div>
@@ -164,15 +228,13 @@
     <script>
         // --- NAVIGATION LOGIC ---
         function showPage(event, pageId) {
-            // Hide all pages
             document.querySelectorAll('.page-view').forEach(page => page.classList.remove('active'));
-            // Remove active highlight from all nav buttons
             document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-            
-            // Show the selected page
             document.getElementById(pageId).classList.add('active');
-            // Add active highlight to the clicked button
             event.target.classList.add('active');
+            
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('edResult').style.display = 'none';
         }
 
         // --- INPATIENT CALCULATOR LOGIC ---
@@ -187,16 +249,12 @@
             payerGroup.style.display = "block";
 
             if (type === 'discharge') {
-                radioTime.checked = true;
-                radioMdm.disabled = true;
+                radioTime.checked = true; radioMdm.disabled = true;
                 note.innerText = "*Discharge Day Management is based entirely on time, not MDM. Prolonged codes do not apply.";
-                payerGroup.style.display = "none";
-                toggleMethod();
+                payerGroup.style.display = "none"; toggleMethod();
             } else {
                 radioMdm.disabled = false;
-                if (type === 'sameDay') {
-                    note.innerText = "*CMS requires an 8 to 24-hour stay for these codes. If less than 8 hours, bill Initial Hospital Care.";
-                }
+                if (type === 'sameDay') note.innerText = "*CMS requires an 8 to 24-hour stay for these codes. If less than 8 hours, bill Initial Hospital Care.";
                 toggleMethod();
             }
         }
@@ -204,11 +262,9 @@
         function toggleMethod() {
             const method = document.querySelector('input[name="method"]:checked').value;
             if (method === 'mdm') {
-                document.getElementById('mdmSection').style.display = 'block';
-                document.getElementById('timeSection').style.display = 'none';
+                document.getElementById('mdmSection').style.display = 'block'; document.getElementById('timeSection').style.display = 'none';
             } else {
-                document.getElementById('mdmSection').style.display = 'none';
-                document.getElementById('timeSection').style.display = 'block';
+                document.getElementById('mdmSection').style.display = 'none'; document.getElementById('timeSection').style.display = 'block';
             }
         }
 
@@ -216,95 +272,118 @@
             const type = document.getElementById('encounterType').value;
             const payer = document.querySelector('input[name="payer"]:checked').value;
             const method = document.querySelector('input[name="method"]:checked').value;
-            const resultBox = document.getElementById('result');
-            
-            let output = "";
-            let isError = false;
+            let output = ""; let isError = false;
 
             if (method === 'mdm') {
                 const mdm = document.getElementById('mdmLevel').value;
-                if (type === 'initial') {
-                    if (mdm === 'low') output = "99221";
-                    else if (mdm === 'moderate') output = "99222";
-                    else if (mdm === 'high') output = "99223";
-                } else if (type === 'subsequent') {
-                    if (mdm === 'low') output = "99231";
-                    else if (mdm === 'moderate') output = "99232";
-                    else if (mdm === 'high') output = "99233";
-                } else if (type === 'sameDay') {
-                    if (mdm === 'low') output = "99234";
-                    else if (mdm === 'moderate') output = "99235";
-                    else if (mdm === 'high') output = "99236";
-                }
+                if (type === 'initial') { if (mdm === 'low') output = "99221"; else if (mdm === 'moderate') output = "99222"; else output = "99223"; } 
+                else if (type === 'subsequent') { if (mdm === 'low') output = "99231"; else if (mdm === 'moderate') output = "99232"; else output = "99233"; } 
+                else if (type === 'sameDay') { if (mdm === 'low') output = "99234"; else if (mdm === 'moderate') output = "99235"; else output = "99236"; }
                 output = "Suggested CPT (Based on MDM): " + output;
             } else {
                 const timeStr = document.getElementById('timeMinutes').value;
-                if (!timeStr) {
-                    showResult("Please enter total minutes.", true);
-                    return;
-                }
+                if (!timeStr) { showResult('result', "Please enter total minutes.", true); return; }
                 const time = parseInt(timeStr, 10);
-                
-                let baseCode = "";
-                let prolongedCode = "";
-                let prolongedUnits = 0;
+                let baseCode = ""; let prolongedCode = ""; let prolongedUnits = 0;
 
                 if (type === 'initial') {
                     if (time < 40) { isError = true; output = "Time does not meet the 40-minute minimum for 99221."; }
-                    else if (time <= 54) baseCode = "99221";
-                    else if (time <= 74) baseCode = "99222";
-                    else {
+                    else if (time <= 54) baseCode = "99221"; else if (time <= 74) baseCode = "99222"; else {
                         baseCode = "99223";
                         if (payer === 'ama' && time >= 90) { prolongedUnits = Math.floor((time - 75) / 15); prolongedCode = "99418"; }
                         else if (payer === 'cms' && time >= 105) { prolongedUnits = Math.floor((time - 90) / 15); prolongedCode = "G0316"; }
                     }
                 } else if (type === 'subsequent') {
                     if (time < 25) { isError = true; output = "Time does not meet the 25-minute minimum for 99231."; }
-                    else if (time <= 34) baseCode = "99231";
-                    else if (time <= 49) baseCode = "99232";
-                    else {
+                    else if (time <= 34) baseCode = "99231"; else if (time <= 49) baseCode = "99232"; else {
                         baseCode = "99233";
                         if (payer === 'ama' && time >= 65) { prolongedUnits = Math.floor((time - 50) / 15); prolongedCode = "99418"; }
                         else if (payer === 'cms' && time >= 80) { prolongedUnits = Math.floor((time - 65) / 15); prolongedCode = "G0316"; }
                     }
                 } else if (type === 'sameDay') {
-                    if (time < 45) { isError = true; output = "Time does not meet the 45-minute minimum for 99234. Consider Initial Hospital Care if stay was under 8 hours."; }
-                    else if (time <= 69) baseCode = "99234";
-                    else if (time <= 84) baseCode = "99235";
-                    else {
+                    if (time < 45) { isError = true; output = "Time does not meet the 45-minute minimum for 99234."; }
+                    else if (time <= 69) baseCode = "99234"; else if (time <= 84) baseCode = "99235"; else {
                         baseCode = "99236";
                         if (payer === 'ama' && time >= 100) { prolongedUnits = Math.floor((time - 85) / 15); prolongedCode = "99418"; }
                         else if (payer === 'cms' && time >= 110) { prolongedUnits = Math.floor((time - 95) / 15); prolongedCode = "G0316"; }
                     }
                 } else if (type === 'discharge') {
-                    if (time <= 30) baseCode = "99238";
-                    else baseCode = "99239";
+                    if (time <= 30) baseCode = "99238"; else baseCode = "99239";
                 }
 
                 if (!isError) {
                     output = `Primary CPT (Based on Time): ${baseCode}`;
-                    if (prolongedUnits > 0) {
-                        output += `<br><br>+ Prolonged Services:<br>${prolongedCode} x ${prolongedUnits} unit(s)`;
-                    }
+                    if (prolongedUnits > 0) output += `<br><br>+ Prolonged Services:<br>${prolongedCode} x ${prolongedUnits} unit(s)`;
                 }
             }
-
-            showResult(output, isError);
+            showResult('result', output, isError);
         }
 
-        function showResult(text, isError) {
-            const resultBox = document.getElementById('result');
-            resultBox.innerHTML = text;
-            resultBox.style.display = 'block';
-            if (isError) {
-                resultBox.className = 'result-box error';
-            } else {
-                resultBox.className = 'result-box success';
+        // --- ED CALCULATOR LOGIC ---
+        function calculateED() {
+            const mdm = document.getElementById('edMdmLevel').value;
+            let output = "";
+            if (mdm === 'none') output = "99281"; else if (mdm === 'straightforward') output = "99282";
+            else if (mdm === 'low') output = "99283"; else if (mdm === 'moderate') output = "99284"; else if (mdm === 'high') output = "99285";
+            showResult('edResult', "Suggested ED CPT: " + output, false);
+        }
+
+        // --- MODIFIER SEARCH LOGIC ---
+        function filterModifiers() {
+            const input = document.getElementById('modSearchInput').value.toUpperCase();
+            const cards = document.getElementById('modifierList').getElementsByClassName('mod-card');
+            for (let i = 0; i < cards.length; i++) {
+                let textContent = cards[i].innerText || cards[i].textContent;
+                cards[i].classList.toggle('hidden', textContent.toUpperCase().indexOf(input) === -1);
             }
         }
 
-        // Initialize UI on load
-        updateUI();
+        // --- FLASHCARD LOGIC ---
+        const flashcards = [
+            { q: "What is the Root Operation for a colonoscopy with removal of a polyp by snare technique?", a: "Excision (Root Operation B). Some of the body part is cut out or off, without replacement." },
+            { q: "What is the Medicare 3-Day Payment Window Rule?", a: "Outpatient diagnostic services and admission-related non-diagnostic services provided within 3 days prior to an inpatient admission are bundled into the inpatient payment." },
+            { q: "When is a condition considered 'Present on Admission' (POA indicator Y)?", a: "Conditions present at the time the order for inpatient admission occurs. This includes conditions that develop during an outpatient encounter (like the ED) prior to admission." },
+            { q: "What is the Root Operation for a total right knee replacement?", a: "Replacement (Root Operation R). Putting in or on biological or synthetic material that physically takes the place and/or function of all or a portion of a body part." },
+            { q: "If a patient is admitted for dehydration secondary to severe gastroenteritis, what is the principal diagnosis?", a: "Dehydration. When a patient is admitted for a symptom/manifestation of an underlying condition and the symptom is the primary focus of care (like IV fluids), sequence the symptom first." }
+        ];
+        
+        let currentCardIndex = 0;
+
+        function renderCard() {
+            const cardContainer = document.getElementById('flashcardContainer');
+            cardContainer.classList.remove('flipped'); // Reset flip state
+            
+            // Wait for flip animation to finish before swapping text to prevent seeing the text backwards
+            setTimeout(() => {
+                document.getElementById('flashcardQuestion').innerText = flashcards[currentCardIndex].q;
+                document.getElementById('flashcardAnswer').innerText = flashcards[currentCardIndex].a;
+                document.getElementById('cardCounter').innerText = `Card ${currentCardIndex + 1} of ${flashcards.length}`;
+            }, 150);
+        }
+
+        function flipCard() {
+            document.getElementById('flashcardContainer').classList.toggle('flipped');
+        }
+
+        function nextCard() {
+            currentCardIndex = (currentCardIndex + 1) % flashcards.length;
+            renderCard();
+        }
+
+        function prevCard() {
+            currentCardIndex = (currentCardIndex - 1 + flashcards.length) % flashcards.length;
+            renderCard();
+        }
+
+        // --- SHARED UI LOGIC & INIT ---
+        function showResult(boxId, text, isError) {
+            const resultBox = document.getElementById(boxId);
+            resultBox.innerHTML = text; resultBox.style.display = 'block';
+            resultBox.className = isError ? 'result-box error' : 'result-box success';
+        }
+
+        updateUI(); // Init forms
+        renderCard(); // Init flashcards
     </script>
 </body>
 </html>
