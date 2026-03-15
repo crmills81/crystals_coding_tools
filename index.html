@@ -723,6 +723,71 @@
 
   textarea { resize: vertical; min-height: 80px; }
 
+  /* ===== QUERY EXTRAS ===== */
+  .query-reminder-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 10px 12px;
+    background: var(--surface2);
+    border-radius: 8px;
+    font-size: 0.82em;
+    line-height: 1.5;
+    color: var(--muted);
+  }
+  .query-reminder-item strong { color: var(--text); display: block; margin-bottom: 1px; }
+  .reminder-icon { font-size: 1.2em; flex-shrink: 0; margin-top: 1px; }
+
+  .query-log-entry {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--primary);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    font-size: 0.84em;
+  }
+  .log-entry-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .log-entry-title { font-weight: 700; color: var(--text); }
+  .log-entry-meta { font-size: 0.78em; color: var(--muted); }
+  .log-entry-preview {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.82em;
+    white-space: pre-wrap;
+    max-height: 80px;
+    overflow: hidden;
+    position: relative;
+    line-height: 1.5;
+  }
+  .log-entry-preview::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 30px;
+    background: linear-gradient(transparent, var(--surface2));
+  }
+  .log-entry-actions { display: flex; gap: 7px; margin-top: 8px; }
+  .log-btn {
+    padding: 4px 10px;
+    font-size: 0.76em;
+    font-weight: 700;
+    border-radius: 5px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    font-family: var(--font-main);
+    transition: all 0.2s;
+  }
+  .log-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .log-btn.danger:hover { border-color: var(--red); color: var(--red); }
+
   /* ===== THEME TOGGLE ===== */
   .theme-toggle {
     margin-left: auto;
@@ -1177,50 +1242,108 @@
 <!-- ==================== QUERY GENERATOR ==================== -->
 <div id="pg-query" class="page-view">
   <h1 class="page-title">Physician Query Generator</h1>
-  <p class="page-subtitle">Generate compliant query templates for common inpatient scenarios</p>
+  <p class="page-subtitle">25 AHIMA/ACDIS-compliant query templates across general &amp; specialty categories</p>
 
-  <div class="card">
+  <!-- Category Tabs -->
+  <div class="specialty-tabs" id="queryCatTabs" style="margin-bottom:0;">
+    <button class="spec-tab active" onclick="filterQueryCat(this,'general')">General Clinical</button>
+    <button class="spec-tab" onclick="filterQueryCat(this,'mcc')">MCC / CC Focus</button>
+    <button class="spec-tab" onclick="filterQueryCat(this,'uro')">🫘 Urology</button>
+    <button class="spec-tab" onclick="filterQueryCat(this,'oph')">👁 Ophthalmology</button>
+    <button class="spec-tab" onclick="filterQueryCat(this,'oto')">👂 OTO</button>
+  </div>
+
+  <div class="card" style="border-top-left-radius:0; border-top-right-radius:0; border-top:none; padding-top:18px;">
+
     <div class="form-group">
       <label class="field-label">Query Type</label>
       <select id="queryType" onchange="updateQueryForm()">
-        <option value="wound">Wound Classification</option>
-        <option value="poa">POA Clarification</option>
-        <option value="specificity">Diagnosis Specificity</option>
-        <option value="sepsis">Sepsis / Infection Source</option>
-        <option value="principal">Principal Diagnosis Clarification</option>
-        <option value="procedure">Procedure Specificity</option>
-        <option value="complication">Complication vs. Expected Outcome</option>
-        <option value="encephalopathy">Encephalopathy Type</option>
+        <!-- populated by JS -->
       </select>
     </div>
 
-    <div id="queryFields">
-      <!-- Dynamic fields injected here -->
+    <!-- Patient info row -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+      <div>
+        <label class="field-label">Patient Info (optional)</label>
+        <input type="text" id="queryPatientInfo" placeholder="e.g., 67M, admitted 03/10">
+      </div>
+      <div>
+        <label class="field-label">Provider / Attending</label>
+        <input type="text" id="queryProvider" placeholder="e.g., Dr. Smith, Urology">
+      </div>
     </div>
 
-    <div style="margin-top:4px;">
-      <label class="field-label">Patient / Additional Context (optional)</label>
-      <input type="text" id="queryPatientInfo" placeholder="e.g., 67M with DM2, admitted 03/10">
+    <div id="queryFields">
+      <!-- Dynamic fields injected by JS -->
+    </div>
+
+    <!-- Urgency tag -->
+    <div class="form-group" style="margin-top:6px;">
+      <label class="field-label">Query Priority</label>
+      <div class="radio-row">
+        <label><input type="radio" name="queryPriority" value="Routine" checked> Routine</label>
+        <label><input type="radio" name="queryPriority" value="Urgent"> Urgent</label>
+        <label><input type="radio" name="queryPriority" value="Concurrent"> Concurrent</label>
+        <label><input type="radio" name="queryPriority" value="Retrospective"> Retrospective</label>
+      </div>
     </div>
   </div>
 
   <button class="btn-primary" onclick="generateQuery()">Generate Query Template →</button>
 
+  <!-- Output box -->
   <div id="queryOutput" class="query-output">
-    <button class="copy-btn" onclick="copyQuery()">Copy</button>
-    <div id="queryText"></div>
+    <div style="display:flex; gap:8px; position:absolute; top:10px; right:10px;">
+      <button class="copy-btn" onclick="copyQuery()">Copy</button>
+      <button class="copy-btn" onclick="printQuery()" style="background:rgba(61,214,200,0.1);border-color:rgba(61,214,200,0.4);color:var(--teal);">Print</button>
+      <button class="copy-btn" onclick="saveToLog()" style="background:rgba(232,197,71,0.1);border-color:rgba(232,197,71,0.4);color:var(--gold);">Save to Log</button>
+    </div>
+    <div id="queryText" style="padding-top:8px;"></div>
   </div>
 
+  <!-- Compliance Reminders -->
   <div class="card" style="margin-top:16px;">
-    <div class="card-label">Query Compliance Reminders</div>
-    <ul style="font-size:0.85em; color:var(--muted); line-height:2; padding-left:18px;">
-      <li>Queries must be <strong style="color:var(--text)">non-leading</strong> — present all clinically reasonable options</li>
-      <li>Include clinical indicators from the record to support the query</li>
-      <li>Must be performed concurrently or retrospectively — not to change a clear diagnosis</li>
-      <li>AHIMA and ACDIS guidelines prohibit "fishing" queries without clinical basis</li>
-      <li>Document query in the medical record per facility policy</li>
-      <li>Verbal queries must be followed up in writing per most facility policies</li>
-    </ul>
+    <div class="card-label">AHIMA / ACDIS Compliance Reminders</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:4px;">
+      <div class="query-reminder-item">
+        <div class="reminder-icon">⚖️</div>
+        <div><strong>Non-Leading</strong><br><span>Present all clinically reasonable options — never steer toward one answer</span></div>
+      </div>
+      <div class="query-reminder-item">
+        <div class="reminder-icon">📋</div>
+        <div><strong>Clinical Basis Required</strong><br><span>Must include clinical indicators from the record; no "fishing" queries</span></div>
+      </div>
+      <div class="query-reminder-item">
+        <div class="reminder-icon">🕐</div>
+        <div><strong>Timing Rules</strong><br><span>Concurrent or retrospective only — never to change a clearly documented diagnosis</span></div>
+      </div>
+      <div class="query-reminder-item">
+        <div class="reminder-icon">📝</div>
+        <div><strong>Documentation</strong><br><span>All verbal queries must be followed up in writing per MCW policy</span></div>
+      </div>
+      <div class="query-reminder-item">
+        <div class="reminder-icon">💰</div>
+        <div><strong>Integrity</strong><br><span>Queries must not be financially motivated — query for accurate documentation, not DRG optimization</span></div>
+      </div>
+      <div class="query-reminder-item">
+        <div class="reminder-icon">✅</div>
+        <div><strong>Unanswered Queries</strong><br><span>Code to the highest degree of certainty supported by the documentation when query goes unanswered</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Query Log -->
+  <div class="card" style="margin-top:16px;" id="queryLogCard">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+      <div class="card-label" style="margin-bottom:0;">Session Query Log</div>
+      <div style="display:flex; gap:8px;">
+        <button class="btn-secondary" onclick="clearLog()" style="padding:6px 12px; font-size:0.75em;">Clear All</button>
+      </div>
+    </div>
+    <div id="queryLogList">
+      <div style="text-align:center; color:var(--muted); font-size:0.85em; padding:20px 0;">No queries saved yet — generate a query and click "Save to Log"</div>
+    </div>
   </div>
 </div>
 
@@ -1413,74 +1536,1180 @@ function showSpecialty(btn, panelId) {
 }
 
 // ===== QUERY GENERATOR =====
+
+// Category definitions
+const queryCategories = {
+  general: [
+    'wound','poa','specificity','sepsis','principal','procedure','complication','encephalopathy','acutechronic','laterality','drugadverse'
+  ],
+  mcc: [
+    'aki','anemia','respfailure','malnutrition','heartfailure','dvtpe','sepsis','encephalopathy'
+  ],
+  uro: [
+    'uro_hydronephrosis','uro_retention','uro_hematuria','uro_calculus','uro_renalfunction','procedure','complication'
+  ],
+  oph: [
+    'oph_cataract','oph_retinal','oph_glaucoma','oph_laterality','procedure','complication'
+  ],
+  oto: [
+    'oto_hearingloss','oto_sinus','oto_trach','oto_laterality','procedure','complication'
+  ]
+};
+
+const queryLabels = {
+  wound:              'Wound Classification',
+  poa:                'POA Clarification',
+  specificity:        'Diagnosis Specificity',
+  sepsis:             'Sepsis / Infection Source',
+  principal:          'Principal Diagnosis Clarification',
+  procedure:          'Procedure Specificity (ICD-10-PCS)',
+  complication:       'Complication vs. Expected Outcome',
+  encephalopathy:     'Encephalopathy Type',
+  acutechronic:       'Acute vs. Chronic Clarification',
+  laterality:         'Laterality Clarification',
+  drugadverse:        'Drug Adverse Effect vs. Toxicity vs. Underdosing',
+  aki:                'Acute Kidney Injury (AKI) — KDIGO Staging',
+  anemia:             'Anemia — Type & Etiology',
+  respfailure:        'Respiratory Failure — Type & Acuity',
+  malnutrition:       'Malnutrition — Severity & Etiology',
+  heartfailure:       'Heart Failure — Type & Acuity',
+  dvtpe:              'DVT / Pulmonary Embolism — Acuity & Status',
+  uro_hydronephrosis: '🫘 Hydronephrosis — Grade & Etiology',
+  uro_retention:      '🫘 Urinary Retention — Type & Cause',
+  uro_hematuria:      '🫘 Hematuria — Significance & Origin',
+  uro_calculus:       '🫘 Renal/Ureteral Calculus — Specificity',
+  uro_renalfunction:  '🫘 Renal Function — CKD Stage / AKI',
+  oph_cataract:       '👁 Cataract — Type & Complexity',
+  oph_retinal:        '👁 Retinal Detachment / Condition — Type',
+  oph_glaucoma:       '👁 Glaucoma — Type & Stage',
+  oph_laterality:     '👁 Ophthalmology — Laterality',
+  oto_hearingloss:    '👂 Hearing Loss — Type & Laterality',
+  oto_sinus:          '👂 Sinus Procedure — Extent & Sinuses',
+  oto_trach:          '👂 Tracheostomy — Indication & Type',
+  oto_laterality:     '👂 OTO — Laterality Clarification',
+};
+
 const queryConfigs = {
+
+  // ── GENERAL ──────────────────────────────────────────────
   wound: {
     fields: [
-      { id: 'qProcedure', label: 'Surgical Procedure', placeholder: 'e.g., laparoscopic cholecystectomy' },
-      { id: 'qIndicators', label: 'Clinical Indicators (e.g., spillage, inflammation, contamination)', placeholder: 'e.g., purulent material encountered, bowel perforation noted' }
+      { id: 'qProcedure', label: 'Surgical Procedure', placeholder: 'e.g., laparoscopic cholecystectomy, TURP', type: 'text' },
+      { id: 'qIndicators', label: 'Clinical Indicators from Operative Report', placeholder: 'e.g., purulent material encountered, bowel perforation noted, gross spillage of intestinal contents', type: 'textarea' }
     ],
-    template: (f, pt) => `PHYSICIAN QUERY — WOUND CLASSIFICATION\n${pt ? 'Patient: ' + pt + '\n' : ''}Procedure: ${f.qProcedure||'[Procedure]'}\n\nClinical Indicators from Documentation:\n${f.qIndicators||'[Clinical findings]'}\n\nBased on the operative report and clinical documentation, please clarify the wound classification for the above procedure:\n\n□ Clean — No inflammation, no break in technique, no entry into respiratory/GI/GU tract\n□ Clean-Contaminated — Entry into respiratory/GI/GU tract without unusual contamination\n□ Contaminated — Fresh traumatic wound, gross spillage, major break in technique\n□ Dirty/Infected — Old traumatic wound, existing infection, perforated viscera\n□ Unable to determine from available information\n\nSignature: _________________ Date: _________`
+    template: (f, pt, prov, pri) => `PHYSICIAN QUERY — WOUND CLASSIFICATION
+MCW Inpatient Coding / CDI
+Priority: ${pri}${pt ? '\nPatient: ' + pt : ''}${prov ? '\nProvider: ' + prov : ''}
+Procedure: ${f.qProcedure||'[Procedure]'}
+Date of Query: ___________
+
+CLINICAL INDICATORS FROM DOCUMENTATION:
+${f.qIndicators||'[Clinical findings from operative report]'}
+
+Based on the operative report and clinical documentation for the above procedure, please clarify the wound classification:
+
+□ CLEAN — No inflammation encountered; no entry into respiratory, GI, biliary, or GU tract; no break in sterile technique
+□ CLEAN-CONTAMINATED — Entry into respiratory, GI, biliary, or GU tract under controlled conditions without unusual contamination
+□ CONTAMINATED — Fresh traumatic wound; gross spillage from GI tract; major break in sterile technique; acute non-purulent inflammation
+□ DIRTY / INFECTED — Old traumatic wound with devitalized tissue; existing clinical infection; perforated viscera encountered
+□ Unable to determine from available documentation
+
+Coding Impact: Wound classification affects HAC (Surgical Site Infection) reporting and may affect DRG assignment.
+
+Coder/CDI: _________________ Date: _________
+Physician Response: _________________ Date: _________`
   },
+
   poa: {
     fields: [
-      { id: 'qDx', label: 'Diagnosis in Question', placeholder: 'e.g., acute kidney injury, pressure ulcer, DVT' },
-      { id: 'qEvidence', label: 'Supporting Clinical Evidence', placeholder: 'e.g., Cr 1.8 on admission, stage II sacral ulcer noted on assessment' }
+      { id: 'qDx', label: 'Diagnosis in Question', placeholder: 'e.g., Acute Kidney Injury, Stage II Pressure Ulcer, DVT', type: 'text' },
+      { id: 'qEvidence', label: 'Supporting Clinical Evidence from Record', placeholder: 'e.g., Cr 1.8 on admission labs (baseline 1.0); stage II sacral ulcer noted on nursing admission skin assessment', type: 'textarea' },
+      { id: 'qLocation', label: 'Where Documented (note location)', placeholder: 'e.g., H&P, nursing admission assessment, progress note day 2', type: 'text' }
     ],
-    template: (f, pt) => `PHYSICIAN QUERY — PRESENT ON ADMISSION CLARIFICATION\n${pt ? 'Patient: ' + pt + '\n' : ''}Diagnosis: ${f.qDx||'[Diagnosis]'}\n\nClinical Evidence from Record:\n${f.qEvidence||'[Clinical findings]'}\n\nBased on the available clinical documentation, please clarify whether ${f.qDx||'[diagnosis]'} was present at the time of inpatient admission:\n\n□ Yes — Present at the time of inpatient admission\n□ No — Not present at the time of inpatient admission; arose after admission\n□ Clinically undetermined — Unable to determine timing based on clinical presentation\n□ Unable to determine — Insufficient documentation to determine\n\nSignature: _________________ Date: _________`
+    template: (f, pt, prov, pri) => `PHYSICIAN QUERY — PRESENT ON ADMISSION (POA) CLARIFICATION
+MCW Inpatient Coding / CDI
+Priority: ${pri}${pt ? '\nPatient: ' + pt : ''}${prov ? '\nProvider: ' + prov : ''}
+Date of Query: ___________
+
+DIAGNOSIS IN QUESTION: ${f.qDx||'[Diagnosis]'}
+DOCUMENTED IN: ${f.qLocation||'[Record location]'}
+
+CLINICAL EVIDENCE FROM RECORD:
+${f.qEvidence||'[Clinical findings supporting the query]'}
+
+Based on the available clinical documentation, please clarify whether ${f.qDx||'[diagnosis]'} was present at the time the inpatient admission order was entered:
+
+□ Y — YES, present at the time of inpatient admission (including if present during prior ED/observation encounter)
+□ N — NO, not present at admission; condition arose or was first identified after the admission order
+□ W — Clinically undetermined; unable to determine based on clinical presentation whether condition was present at admission
+□ U — Insufficient documentation to determine POA status
+
+Coding Impact: POA = N for HAC-listed diagnoses may affect MS-DRG payment. POA clarification affects quality metrics and HAC reporting.
+
+Coder/CDI: _________________ Date: _________
+Physician Response: _________________ Date: _________`
   },
+
   specificity: {
     fields: [
-      { id: 'qVague', label: 'Current Vague Documentation', placeholder: 'e.g., "anemia", "renal failure", "respiratory failure"' },
-      { id: 'qLabs', label: 'Supporting Clinical Data', placeholder: 'e.g., Hgb 7.2, transfused 2 units pRBC; Cr 3.1 from baseline 1.0' }
+      { id: 'qVague', label: 'Current Vague / Non-Specific Documentation', placeholder: 'e.g., "anemia", "renal failure", "respiratory failure", "altered mental status"', type: 'text' },
+      { id: 'qLabs', label: 'Supporting Clinical Data & Lab Values', placeholder: 'e.g., Hgb 7.2 g/dL, MCV 72, ferritin 4; transfused 2 units pRBC during admission', type: 'textarea' },
+      { id: 'qSpecOptions', label: 'Specific Options to Present (if known)', placeholder: 'e.g., iron deficiency anemia, anemia of chronic disease, blood loss anemia', type: 'text' }
     ],
-    template: (f, pt) => `PHYSICIAN QUERY — DIAGNOSIS SPECIFICITY\n${pt ? 'Patient: ' + pt + '\n' : ''}Current Documentation: "${f.qVague||'[vague term]'}"\n\nClinical Data Available:\n${f.qLabs||'[Clinical findings]'}\n\nBased on the clinical findings documented above, can you provide additional specificity for this diagnosis?\n\n□ ${f.qVague||'[Condition]'} — specify type/etiology: _______________________\n□ Clinical significance not meeting criteria for a reportable condition at this time\n□ Unable to further specify at this time\n□ Other: _______________________\n\nSignature: _________________ Date: _________`
+    template: (f, pt, prov, pri) => `PHYSICIAN QUERY — DIAGNOSIS SPECIFICITY
+MCW Inpatient Coding / CDI
+Priority: ${pri}${pt ? '\nPatient: ' + pt : ''}${prov ? '\nProvider: ' + prov : ''}
+Date of Query: ___________
+
+CURRENT DOCUMENTATION: "${f.qVague||'[vague or non-specific term]'}"
+
+CLINICAL DATA SUPPORTING SPECIFICITY:
+${f.qLabs||'[Lab values, imaging, clinical findings]'}
+
+${f.qSpecOptions ? 'POSSIBLE DIAGNOSES BASED ON CLINICAL DATA: ' + f.qSpecOptions + '\n\n' : ''}Based on the above clinical findings, please provide additional diagnostic specificity:
+
+□ ${f.qVague||'[Condition]'} — specific type/etiology: _______________________
+□ ${f.qVague||'[Condition]'} — additional specification: _______________________
+□ ${f.qVague||'[Condition]'} — not clinically significant / not a reportable condition at this time
+□ Unable to further specify based on available clinical information
+□ Other diagnosis: _______________________
+
+Coding Impact: Increased specificity may impact CC/MCC assignment and MS-DRG.
+
+Coder/CDI: _________________ Date: _________
+Physician Response: _________________ Date: _________`
   },
+
   sepsis: {
     fields: [
-      { id: 'qInfection', label: 'Identified Infection / Source', placeholder: 'e.g., UTI, pneumonia, wound infection, bacteremia' },
-      { id: 'qSirs', label: 'SIRS Criteria / Organ Dysfunction Noted', placeholder: 'e.g., WBC 18k, HR 112, Temp 38.9°C, altered mental status' }
+      { id: 'qInfection', label: 'Identified Infection / Source', placeholder: 'e.g., UTI with E. coli bacteremia, pneumonia, wound infection', type: 'text' },
+      { id: 'qSirs', label: 'SIRS Criteria / Organ Dysfunction Findings', placeholder: 'e.g., WBC 18,400, HR 118, Temp 38.9°C, SBP 88 requiring vasopressors, lactate 3.2, AMS', type: 'textarea' },
+      { id: 'qTreatment', label: 'Treatment Initiated', placeholder: 'e.g., broad-spectrum antibiotics, 30mL/kg IVF bolus, ICU transfer, norepinephrine drip', type: 'text' }
     ],
-    template: (f, pt) => `PHYSICIAN QUERY — SEPSIS / INFECTION SOURCE CLARIFICATION\n${pt ? 'Patient: ' + pt + '\n' : ''}Documented Infection: ${f.qInfection||'[Infection]'}\n\nClinical Findings:\n${f.qSirs||'[SIRS criteria / organ dysfunction]'}\n\nBased on the clinical indicators above, please clarify your clinical diagnosis:\n\n□ Sepsis — due to ${f.qInfection||'[source]'}\n□ Severe Sepsis — due to ${f.qInfection||'[source]'} with acute organ dysfunction\n□ Septic Shock — due to ${f.qInfection||'[source]'} with cardiovascular failure / vasopressor requirement\n□ Infection without sepsis — ${f.qInfection||'[source]'} without systemic inflammatory response meeting sepsis criteria\n□ Bacteremia — without sepsis\n□ Unable to determine / clinically undetermined\n\nSignature: _________________ Date: _________`
+    template: (f, pt, prov, pri) => `PHYSICIAN QUERY — SEPSIS / INFECTION SOURCE CLARIFICATION
+MCW Inpatient Coding / CDI
+Priority: ${pri}${pt ? '\nPatient: ' + pt : ''}${prov ? '\nProvider: ' + prov : ''}
+Date of Query: ___________
+
+DOCUMENTED INFECTION: ${f.qInfection||'[Infection/source]'}
+TREATMENT PROVIDED: ${f.qTreatment||'[Antibiotics, fluid resuscitation, ICU, pressors]'}
+
+CLINICAL FINDINGS (SIRS / ORGAN DYSFUNCTION):
+${f.qSirs||'[Vital signs, labs, clinical findings]'}
+
+Based on the clinical indicators above, please clarify your clinical diagnosis:
+
+□ SEPSIS — Systemic response to infection; due to: ${f.qInfection||'[source]'}
+□ SEVERE SEPSIS — Sepsis with acute organ dysfunction; due to: ${f.qInfection||'[source]'}
+   Organ dysfunction present: □ AKI  □ Respiratory  □ AMS  □ Coagulopathy  □ Hepatic  □ Other: ___
+□ SEPTIC SHOCK — Sepsis with persistent hypotension requiring vasopressors despite adequate fluid resuscitation; due to: ${f.qInfection||'[source]'}
+□ INFECTION WITHOUT SEPSIS — ${f.qInfection||'[source]'} without systemic inflammatory response meeting sepsis criteria
+□ SIRS (Non-infectious) — systemic inflammatory response NOT due to infection; etiology: _______
+□ BACTEREMIA — positive blood culture without clinical sepsis
+□ Clinically undetermined
+
+Coding Impact: Sepsis = MCC (major impact on MS-DRG). Septic shock = highest-weighted MCC. Critical for accurate DRG assignment.
+
+Coder/CDI: _________________ Date: _________
+Physician Response: _________________ Date: _________`
   },
+
   principal: {
     fields: [
-      { id: 'qDx1', label: 'Condition #1', placeholder: 'e.g., CHF exacerbation' },
-      { id: 'qDx2', label: 'Condition #2', placeholder: 'e.g., acute on chronic renal failure' }
+      { id: 'qDx1', label: 'Condition A', placeholder: 'e.g., CHF exacerbation', type: 'text' },
+      { id: 'qDx2', label: 'Condition B', placeholder: 'e.g., acute on chronic kidney disease', type: 'text' },
+      { id: 'qAdmitReason', label: 'Stated Reason for Admission / Chief Complaint', placeholder: 'e.g., shortness of breath, fluid overload, transferred from OSH for cardiac monitoring', type: 'text' }
     ],
-    template: (f, pt) => `PHYSICIAN QUERY — PRINCIPAL DIAGNOSIS CLARIFICATION\n${pt ? 'Patient: ' + pt + '\n' : ''}\nTwo conditions appear to equally qualify as the principal diagnosis after study. Per coding guidelines, the principal diagnosis is the condition established after study to be chiefly responsible for the admission.\n\nCondition A: ${f.qDx1||'[Condition 1]'}\nCondition B: ${f.qDx2||'[Condition 2]'}\n\nPlease indicate which condition was chiefly responsible for occasioning the admission:\n\n□ ${f.qDx1||'Condition A'} — primary reason for admission\n□ ${f.qDx2||'Condition B'} — primary reason for admission\n□ Both conditions equally contributed (either may be sequenced as principal)\n□ Neither — principal diagnosis is: _______________________\n\nSignature: _________________ Date: _________`
+    template: (f, pt, prov, pri) => `PHYSICIAN QUERY — PRINCIPAL DIAGNOSIS CLARIFICATION
+MCW Inpatient Coding / CDI
+Priority: ${pri}${pt ? '\nPatient: ' + pt : ''}${prov ? '\nProvider: ' + prov : ''}
+Date of Query: ___________
+
+STATED ADMISSION REASON: ${f.qAdmitReason||'[Chief complaint / reason for admission]'}
+
+Per UHDDS guidelines, the principal diagnosis is defined as "the condition established after study to be chiefly responsible for occasioning the admission of the patient to the hospital for care."
+
+Two conditions appear to qualify equally as principal diagnosis:
+  Condition A: ${f.qDx1||'[Condition 1]'}
+  Condition B: ${f.qDx2||'[Condition 2]'}
+
+Please indicate which condition was chiefly responsible for this inpatient admission:
+
+□ ${f.qDx1||'Condition A'} — primarily responsible for occasioning this admission
+□ ${f.qDx2||'Condition B'} — primarily responsible for occasioning this admission
+□ Both conditions equally contributed; either may be sequenced as principal diagnosis
+□ Neither — the principal diagnosis is: _______________________
+□ Cannot determine from available documentation
+
+Coding Impact: Principal diagnosis determines MDC and MS-DRG family assignment.
+
+Coder/CDI: _________________ Date: _________
+Physician Response: _________________ Date: _________`
   },
+
   procedure: {
     fields: [
-      { id: 'qProcName', label: 'Procedure Name', placeholder: 'e.g., cystoscopy, TURP, laparoscopic procedure' },
-      { id: 'qApproach', label: 'Approach / Details Needed', placeholder: 'e.g., open vs. laparoscopic, partial vs. complete, scope size' }
+      { id: 'qProcName', label: 'Procedure Name (as documented)', placeholder: 'e.g., laparoscopic cystoscopy with stent placement', type: 'text' },
+      { id: 'qProcDate', label: 'Procedure Date', placeholder: 'e.g., 03/10/2025', type: 'text' },
+      { id: 'qProcDetail', label: 'Specific Clarification Needed', placeholder: 'e.g., Was approach open or percutaneous endoscopic? Was device left in place?', type: 'textarea' }
     ],
-    template: (f, pt) => `PHYSICIAN QUERY — PROCEDURE SPECIFICITY\n${pt ? 'Patient: ' + pt + '\n' : ''}Procedure: ${f.qProcName||'[Procedure]'}\n\nAdditional Detail Needed: ${f.qApproach||'[Specify]'}\n\nTo ensure accurate ICD-10-PCS coding, please clarify the following for the above procedure:\n\n□ Approach: □ Open  □ Percutaneous Endoscopic  □ Laparoscopic  □ Via Natural/Artificial Opening  □ Endoscopic  □ Other: ___\n□ Extent: □ Complete  □ Partial  □ Other: _______________\n□ Device left in place: □ Yes — specify: _______________  □ No\n□ Root Operation: □ Excision  □ Resection  □ Repair  □ Replacement  □ Insertion  □ Other: ___\n□ Other clarification needed: _______________________\n\nSignature: _________________ Date: _________`
+    template: (f, pt, prov, pri) => `PHYSICIAN QUERY — PROCEDURE SPECIFICITY (ICD-10-PCS)
+MCW Inpatient Coding / CDI
+Priority: ${pri}${pt ? '\nPatient: ' + pt : ''}${prov ? '\nProvider: ' + prov : ''}
+Date of Query: ___________
+
+PROCEDURE: ${f.qProcName||'[Procedure name]'}
+PROCEDURE DATE: ${f.qProcDate||'[Date]'}
+
+CLARIFICATION NEEDED:
+${f.qProcDetail||'[Specific ICD-10-PCS character clarification needed]'}
+
+To ensure accurate ICD-10-PCS code assignment, please clarify:
+
+APPROACH:
+□ Open (0) — cutting through the skin/mucous membrane
+□ Percutaneous (3) — entry via needle/catheter through skin/mucous membrane
+□ Percutaneous Endoscopic (4) — entry via small incision(s) with visualization equipment
+□ Via Natural or Artificial Opening (7)
+□ Via Natural or Artificial Opening Endoscopic (8) — e.g., transurethral endoscopic
+□ External (X)
+
+EXTENT / ROOT OPERATION:
+□ Complete removal of entire body part (Resection)
+□ Partial removal — some tissue/body part remaining (Excision)
+□ No tissue removed; structure restored (Repair)
+□ Body part replaced with device (Replacement)
+□ Device placed without removing body part (Insertion)
+□ Other: _______________________
+
+DEVICE LEFT IN PLACE (if applicable):
+□ Yes — specify type: _______________________
+□ No device / no drainage device / no synthetic material
+
+QUALIFIER / ADDITIONAL INFO:
+□ Diagnostic (sent to pathology)  □ Therapeutic  □ Allogeneic  □ Autologous
+□ Other qualifier: _______________________
+
+Coder/CDI: _________________ Date: _________
+Physician Response: _________________ Date: _________`
   },
+
   complication: {
     fields: [
-      { id: 'qEvent', label: 'Clinical Event in Question', placeholder: 'e.g., postoperative fever, elevated creatinine after contrast' },
-      { id: 'qContext', label: 'Relevant Context', placeholder: 'e.g., post appendectomy day 2, creatinine rose from 1.1 to 2.3' }
+      { id: 'qEvent', label: 'Clinical Event / Unexpected Finding', placeholder: 'e.g., postoperative fever day 2, rising creatinine after contrast, return to OR', type: 'text' },
+      { id: 'qContext', label: 'Relevant Clinical Context', placeholder: 'e.g., POD2 after TURP; Cr rose from 1.1 → 2.4 over 48 hrs; patient received IV contrast', type: 'textarea' },
+      { id: 'qTreatment', label: 'Treatment Provided for this Event', placeholder: 'e.g., IV antibiotics started, wound opened and packed, nephrology consult', type: 'text' }
     ],
-    template: (f, pt) => `PHYSICIAN QUERY — COMPLICATION vs. EXPECTED OUTCOME\n${pt ? 'Patient: ' + pt + '\n' : ''}Event: ${f.qEvent||'[Event]'}\nClinical Context: ${f.qContext||'[Context]'}\n\nPlease clarify whether the above represents a complication of care or an expected/inherent outcome:\n\n□ Complication of surgery / procedure — specify: _______________________\n□ Complication of medical treatment — specify: _______________________\n□ Expected outcome / inherent risk of the procedure or disease process — not a reportable complication\n□ Pre-existing condition, not related to current hospitalization\n□ Clinically undetermined\n\nSignature: _________________ Date: _________`
+    template: (f, pt, prov, pri) => `PHYSICIAN QUERY — COMPLICATION vs. EXPECTED OUTCOME
+MCW Inpatient Coding / CDI
+Priority: ${pri}${pt ? '\nPatient: ' + pt : ''}${prov ? '\nProvider: ' + prov : ''}
+Date of Query: ___________
+
+CLINICAL EVENT: ${f.qEvent||'[Event description]'}
+TREATMENT PROVIDED: ${f.qTreatment||'[How was this managed]'}
+
+CLINICAL CONTEXT:
+${f.qContext||'[Relevant post-procedure or clinical timeline]'}
+
+Per ICD-10-CM guidelines, a complication must be explicitly documented by the physician as a complication or as a cause-and-effect relationship between the care provided and the condition.
+
+Please clarify whether the above represents:
+
+□ COMPLICATION of surgery/procedure — specify procedure: _______________________
+   Type of complication: □ Infection  □ Hemorrhage  □ Mechanical failure  □ Seroma/hematoma  □ Other: ___
+□ COMPLICATION of medical treatment — specify treatment: _______________________
+□ EXPECTED OUTCOME — an inherent risk or anticipated result of the procedure/disease; NOT a reportable complication
+□ PRE-EXISTING CONDITION — not caused by or related to the current hospitalization/procedure
+□ UNRELATED new condition — coincidental finding unrelated to care provided
+□ Clinically undetermined / causality cannot be established
+
+Coding Impact: Explicit complication documentation required for accurate code assignment. Assumed cause-and-effect is insufficient.
+
+Coder/CDI: _________________ Date: _________
+Physician Response: _________________ Date: _________`
   },
+
   encephalopathy: {
     fields: [
-      { id: 'qEncSymp', label: 'Symptoms / Clinical Findings', placeholder: 'e.g., confusion, altered mental status, agitation, asterixis' },
-      { id: 'qEncCause', label: 'Suspected Etiology', placeholder: 'e.g., hepatic disease, metabolic derangement, sepsis, medication' }
+      { id: 'qEncSymp', label: 'Symptoms / Clinical Findings', placeholder: 'e.g., confusion, disorientation, agitation, somnolence, asterixis, GCS 12', type: 'textarea' },
+      { id: 'qEncCause', label: 'Suspected Contributing Etiology / Clinical Context', placeholder: 'e.g., hepatic cirrhosis with elevated ammonia; septic picture; recent opioid use; hyponatremia Na 118', type: 'textarea' }
     ],
-    template: (f, pt) => `PHYSICIAN QUERY — ENCEPHALOPATHY TYPE CLARIFICATION\n${pt ? 'Patient: ' + pt + '\n' : ''}Symptoms: ${f.qEncSymp||'[Symptoms]'}\nSuspected Etiology: ${f.qEncCause||'[Etiology]'}\n\nThe medical record documents altered mental status / ${f.qEncSymp||'cognitive changes'}. To support accurate diagnosis coding, please clarify the type of encephalopathy:\n\n□ Metabolic encephalopathy — etiology: _______________________\n□ Toxic encephalopathy — specify agent: _______________________\n□ Septic encephalopathy — due to: _______________________\n□ Hepatic encephalopathy\n□ Hypoxic-ischemic encephalopathy\n□ Hypertensive encephalopathy\n□ Delirium — □ Hyperactive  □ Hypoactive  □ Mixed\n□ Not an encephalopathy — alternate diagnosis: _______________________\n□ Clinically undetermined\n\nSignature: _________________ Date: _________`
+    template: (f, pt, prov, pri) => `PHYSICIAN QUERY — ENCEPHALOPATHY TYPE CLARIFICATION
+MCW Inpatient Coding / CDI
+Priority: ${pri}${pt ? '\nPatient: ' + pt : ''}${prov ? '\nProvider: ' + prov : ''}
+Date of Query: ___________
+
+CLINICAL SYMPTOMS / MENTAL STATUS FINDINGS:
+${f.qEncSymp||'[AMS, confusion, neurological findings]'}
+
+SUSPECTED ETIOLOGY / CLINICAL CONTEXT:
+${f.qEncCause||'[Underlying conditions, labs, medications]'}
+
+The medical record documents altered mental status / cognitive changes. To support accurate ICD-10-CM code assignment, please clarify the clinical diagnosis:
+
+□ METABOLIC ENCEPHALOPATHY — due to: □ Electrolyte imbalance  □ Hyperglycemia/hypoglycemia  □ Uremia  □ Hypoxia  □ Other: ___
+□ TOXIC ENCEPHALOPATHY — due to: □ Medication/drug  □ Alcohol  □ Other substance  □ Specify: ___________
+□ SEPTIC ENCEPHALOPATHY — secondary to sepsis/systemic infection; source: ___________
+□ HEPATIC ENCEPHALOPATHY — due to liver disease/failure
+□ HYPOXIC-ISCHEMIC ENCEPHALOPATHY — due to: ___________
+□ HYPERTENSIVE ENCEPHALOPATHY
+□ POST-PROCEDURAL COGNITIVE CHANGES — specify: ___________
+□ DELIRIUM (NOT encephalopathy) — □ Hyperactive  □ Hypoactive  □ Mixed
+   Contributing factors: □ Medications  □ Infection  □ Pain  □ Sleep deprivation  □ Other: ___
+□ DEMENTIA with acute exacerbation — specify dementia type: ___________
+□ NOT an encephalopathy/delirium — alternate diagnosis: ___________
+□ Clinically undetermined
+
+Coding Impact: Encephalopathy = MCC. Delirium = CC. Distinction is critical for MS-DRG assignment.
+
+Coder/CDI: _________________ Date: _________
+Physician Response: _________________ Date: _________`
+  },
+
+  acutechronic: {
+    fields: [
+      { id: 'qAcDx', label: 'Diagnosis in Question', placeholder: 'e.g., respiratory failure, heart failure, kidney disease, pancreatitis', type: 'text' },
+      { id: 'qAcEvidence', label: 'Clinical Evidence of Acute Exacerbation or Change', placeholder: 'e.g., new onset SOB, Cr 2.8 (baseline 1.2), LVEF decreased from prior echo, new O2 requirement', type: 'textarea' }
+    ],
+    template: (f, pt, prov, pri) => `PHYSICIAN QUERY — ACUTE vs. CHRONIC CLARIFICATION
+MCW Inpatient Coding / CDI
+Priority: ${pri}${pt ? '\nPatient: ' + pt : ''}${prov ? '\nProvider: ' + prov : ''}
+Date of Query: ___________
+
+DIAGNOSIS IN QUESTION: ${f.qAcDx||'[Diagnosis]'}
+
+CLINICAL EVIDENCE OF ACUTE CHANGE:
+${f.qAcEvidence||'[Labs, vitals, imaging, clinical changes from baseline]'}
+
+Please clarify the acuity and chronicity of ${f.qAcDx||'[diagnosis]'} for this encounter:
+
+□ ACUTE — new onset; no prior history of this condition
+□ CHRONIC — long-standing; no acute exacerbation during this admission
+□ ACUTE ON CHRONIC — known chronic condition with acute decompensation/exacerbation during this admission
+□ SUBACUTE — gradual onset over days/weeks; not meeting criteria for acute
+□ History of [condition] — resolved prior to this admission; no longer active
+□ Cannot determine acuity from available documentation
+
+Coding Impact: Acute, chronic, and acute-on-chronic have distinct ICD-10-CM codes with different CC/MCC status in many conditions.
+
+Coder/CDI: _________________ Date: _________
+Physician Response: _________________ Date: _________`
+  },
+
+  laterality: {
+    fields: [
+      { id: 'qLatDx', label: 'Diagnosis / Procedure Requiring Laterality', placeholder: 'e.g., femur fracture, retinal detachment, renal calculus', type: 'text' },
+      { id: 'qLatEvidence', label: 'Documentation Location / Evidence', placeholder: 'e.g., imaging reports reference right side; op note unclear', type: 'text' }
+    ],
+    template: (f, pt, prov, pri) => `PHYSICIAN QUERY — LATERALITY CLARIFICATION
+MCW Inpatient Coding / CDI
+Priority: ${pri}${pt ? '\nPatient: ' + pt : ''}${prov ? '\nProvider: ' + prov : ''}
+Date of Query: ___________
+
+DIAGNOSIS / PROCEDURE: ${f.qLatDx||'[Condition or procedure]'}
+DOCUMENTATION REVIEWED: ${f.qLatEvidence||'[Where reviewed and what was found]'}
+
+ICD-10-CM/PCS requires laterality specification for accurate code assignment. Please clarify:
+
+□ RIGHT side / RIGHT ${f.qLatDx||'[structure]'}
+□ LEFT side / LEFT ${f.qLatDx||'[structure]'}
+□ BILATERAL — both sides affected/treated
+□ Unspecified / laterality cannot be determined clinically
+□ Other anatomical clarification: _______________________
+
+Coder/CDI: _________________ Date: _________
+Physician Response: _________________ Date: _________`
+  },
+
+  drugadverse: {
+    fields: [
+      { id: 'qDrug', label: 'Drug / Medication in Question', placeholder: 'e.g., metformin, opioid analgesic, warfarin, chemotherapy agent', type: 'text' },
+      { id: 'qDrugEffect', label: 'Clinical Effect / Presentation', placeholder: 'e.g., lactic acidosis, respiratory depression, GI bleeding, nausea/vomiting', type: 'text' },
+      { id: 'qDrugContext', label: 'Prescription / Administration Context', placeholder: 'e.g., patient took prescribed dose correctly; patient doubled dose accidentally; patient self-medicated with OTC', type: 'textarea' }
+    ],
+    template: (f, pt, prov, pri) => `PHYSICIAN QUERY — DRUG ADVERSE EFFECT vs. TOXICITY vs. UNDERDOSING
+MCW Inpatient Coding / CDI
+Priority: ${pri}${pt ? '\nPatient: ' + pt : ''}${prov ? '\nProvider: ' + prov : ''}
+Date of Query: ___________
+
+DRUG / MEDICATION: ${f.qDrug||'[Medication name]'}
+CLINICAL EFFECT / PRESENTATION: ${f.qDrugEffect||'[Symptoms/lab findings]'}
+CONTEXT: ${f.qDrugContext||'[How drug was taken/administered]'}
+
+Please clarify the nature of the drug-related condition:
+
+□ ADVERSE EFFECT — Drug was properly administered (correct drug, correct dose, correct route) and a harmful reaction occurred; no error or misuse
+□ POISONING — Accidental: Medication taken/given in error (wrong drug, wrong dose, wrong route)
+□ POISONING — Intentional Self-Harm: Deliberate overdose/ingestion with intent to harm
+□ POISONING — Assault: Drug given to patient by another with intent to harm
+□ POISONING — Undetermined: Circumstances unknown
+□ TOXIC EFFECT — Exposure to non-medicinal substances (industrial chemicals, natural toxins, etc.)
+□ UNDERDOSING — Patient took LESS than prescribed/indicated (noncompliance, financial reasons, etc.)
+   Reason for underdosing: □ Patient decision  □ Financial/access barrier  □ Side effects  □ Other: ___
+□ Unable to determine from documentation
+
+Coding Impact: Determines whether a T-code (poisoning) or adverse effect code (Z codes + condition) is reported. Significantly affects DRG.
+
+Coder/CDI: _________________ Date: _________
+Physician Response: _________________ Date: _________`
+  },
+
+  // ── MCC / CC FOCUS ───────────────────────────────────────
+  aki: {
+    fields: [
+      { id: 'qAkiBaseline', label: 'Baseline Creatinine', placeholder: 'e.g., 1.0 mg/dL (6 months ago per outpatient records)', type: 'text' },
+      { id: 'qAkiPeak', label: 'Peak Creatinine This Admission', placeholder: 'e.g., 3.2 mg/dL on day 3', type: 'text' },
+      { id: 'qAkiUop', label: 'Urine Output / Other Findings', placeholder: 'e.g., oliguria <0.3 mL/kg/hr × 24hrs; dialysis initiated; no dialysis required', type: 'text' },
+      { id: 'qAkiCause', label: 'Suspected Etiology', placeholder: 'e.g., contrast-induced, sepsis, hypovolemia, post-operative, ATN, obstruction', type: 'text' }
+    ],
+    template: (f, pt, prov, pri) => `PHYSICIAN QUERY — ACUTE KIDNEY INJURY (AKI) — KDIGO STAGING
+MCW Inpatient Coding / CDI
+Priority: ${pri}${pt ? '\nPatient: ' + pt : ''}${prov ? '\nProvider: ' + prov : ''}
+Date of Query: ___________
+
+LABORATORY DATA:
+  Baseline Creatinine: ${f.qAkiBaseline||'[Baseline Cr]'}
+  Peak Creatinine (this admission): ${f.qAkiPeak||'[Peak Cr]'}
+  Urine Output / RRT: ${f.qAkiUop||'[UOP or dialysis info]'}
+  Suspected Cause: ${f.qAkiCause||'[Etiology]'}
+
+KDIGO STAGING REFERENCE:
+  Stage 1: Cr ×1.5–1.9 baseline OR ↑ ≥0.3 mg/dL; UOP <0.5 mL/kg/hr for 6–12 hrs
+  Stage 2: Cr ×2.0–2.9 baseline; UOP <0.5 mL/kg/hr for ≥12 hrs
+  Stage 3: Cr ×3.0 baseline OR ≥4.0 mg/dL OR initiation of RRT; UOP <0.3 mL/kg/hr ≥24 hrs or anuria ≥12 hrs
+
+Based on the lab values and clinical findings above, please clarify your diagnosis:
+
+□ ACUTE KIDNEY INJURY (AKI) — Stage: □ 1  □ 2  □ 3  □ Unspecified
+   Etiology: ${f.qAkiCause||'[Specify cause]'}
+□ ACUTE ON CHRONIC KIDNEY DISEASE — AKI superimposed on pre-existing CKD
+   CKD Stage (baseline): _______  AKI Stage: _______
+□ CHRONIC KIDNEY DISEASE ONLY — no acute component; stable at baseline
+   CKD Stage: □ 1  □ 2  □ 3a  □ 3b  □ 4  □ 5  □ ESRD
+□ ACUTE TUBULAR NECROSIS (ATN)
+□ Elevated creatinine — not clinically significant / does not meet criteria for AKI
+□ Clinically undetermined
+
+Coding Impact: AKI = MCC (Stage unspecified); ATN = MCC. CKD alone = CC at stages 4–5/ESRD. Critical for DRG assignment.
+
+Coder/CDI: _________________ Date: _________
+Physician Response: _________________ Date: _________`
+  },
+
+  anemia: {
+    fields: [
+      { id: 'qAnemHgb', label: 'Hemoglobin / Hematocrit Values', placeholder: 'e.g., Hgb 6.8 g/dL nadir; Hct 21%; baseline Hgb ~12', type: 'text' },
+      { id: 'qAnemLabs', label: 'Other Supporting Labs', placeholder: 'e.g., MCV 72 (microcytic); ferritin 3; TIBC elevated; retic 0.4%; folate/B12 wnl', type: 'textarea' },
+      { id: 'qAnemTx', label: 'Treatment Provided', placeholder: 'e.g., transfused 2 units pRBC; iron IV; EPO initiated; no treatment needed', type: 'text' }
+    ],
+    template: (f, pt, prov, pri) => `PHYSICIAN QUERY — ANEMIA — TYPE & ETIOLOGY
+MCW Inpatient Coding / CDI
+Priority: ${pri}${pt ? '\nPatient: ' + pt : ''}${prov ? '\nProvider: ' + prov : ''}
+Date of Query: ___________
+
+LABORATORY VALUES:
+  Hgb / Hct: ${f.qAnemHgb||'[Hgb/Hct values]'}
+  Supporting Labs: ${f.qAnemLabs||'[CBC indices, iron studies, B12, folate, retic count]'}
+  Treatment: ${f.qAnemTx||'[Transfusion, IV iron, EPO, etc.]'}
+
+Please clarify the type and etiology of anemia documented for this patient:
+
+□ IRON DEFICIENCY ANEMIA — due to: □ Blood loss (chronic/acute)  □ Poor intake/malabsorption  □ Other: ___
+□ ANEMIA OF CHRONIC DISEASE / INFLAMMATION — due to: □ CKD  □ Malignancy  □ Inflammatory condition  □ Other: ___
+□ ACUTE BLOOD LOSS ANEMIA — due to: □ Surgical blood loss  □ GI bleed  □ Trauma  □ Other: ___
+□ VITAMIN DEFICIENCY ANEMIA — □ B12 (pernicious/dietary)  □ Folate  □ Other: ___
+□ APLASTIC ANEMIA
+□ HEMOLYTIC ANEMIA — type: _______________________
+□ ANEMIA DUE TO ANTINEOPLASTIC CHEMOTHERAPY / MYELOSUPPRESSION
+□ ANEMIA DUE TO RENAL FAILURE (EPO deficiency)
+□ SICKLE CELL / HEMOGLOBIN DISORDER — specify: ___________
+□ Post-procedure anemia — specify procedure: ___________
+□ Anemia — cannot further specify type/etiology at this time
+□ Low hemoglobin — not clinically significant / not a reportable anemia
+
+Coding Impact: Specific anemia types carry different CC/MCC status. Anemia due to antineoplastic therapy = CC.
+
+Coder/CDI: _________________ Date: _________
+Physician Response: _________________ Date: _________`
+  },
+
+  respfailure: {
+    fields: [
+      { id: 'qRespABG', label: 'ABG / Respiratory Values', placeholder: 'e.g., pH 7.28, PaCO2 62, PaO2 58 on room air; SpO2 84% on admission', type: 'text' },
+      { id: 'qRespSupport', label: 'Respiratory Support Required', placeholder: 'e.g., BiPAP 12/5, mechanical ventilation, supplemental O2 >4L, HFNC 40L', type: 'text' },
+      { id: 'qRespCause', label: 'Suspected Etiology / Underlying Condition', placeholder: 'e.g., COPD exacerbation, pneumonia, CHF pulmonary edema, post-extubation', type: 'text' }
+    ],
+    template: (f, pt, prov, pri) => `PHYSICIAN QUERY — RESPIRATORY FAILURE — TYPE & ACUITY
+MCW Inpatient Coding / CDI
+Priority: ${pri}${pt ? '\nPatient: ' + pt : ''}${prov ? '\nProvider: ' + prov : ''}
+Date of Query: ___________
+
+RESPIRATORY DATA:
+  ABG / O2 Sat Values: ${f.qRespABG||'[ABG values, SpO2]'}
+  Respiratory Support: ${f.qRespSupport||'[O2, BiPAP, vent, HFNC]'}
+  Suspected Etiology: ${f.qRespCause||'[Underlying condition]'}
+
+Please clarify your clinical diagnosis regarding respiratory status:
+
+□ ACUTE RESPIRATORY FAILURE — Type:
+   □ Type I — Hypoxic (PaO2 < 60 mmHg; adequate or low CO2)
+   □ Type II — Hypercapnic (PaCO2 > 45 mmHg with acidosis)
+   □ Type I and II — Combined hypoxic and hypercapnic
+□ ACUTE ON CHRONIC RESPIRATORY FAILURE — acute decompensation of chronic respiratory failure
+□ CHRONIC RESPIRATORY FAILURE — baseline; no acute change during this admission
+□ RESPIRATORY INSUFFICIENCY / FAILURE TO WEAN — not meeting full criteria for respiratory failure
+□ RESPIRATORY DISTRESS — not meeting criteria for respiratory failure
+□ Conditions treated / no respiratory failure — document as: _______________________
+□ Clinically undetermined
+
+Coding Impact: Acute respiratory failure = MCC; chronic = CC. Type (I vs II) has distinct codes. Significant DRG impact.
+
+Coder/CDI: _________________ Date: _________
+Physician Response: _________________ Date: _________`
+  },
+
+  malnutrition: {
+    fields: [
+      { id: 'qMalLabs', label: 'Nutritional Labs / Assessment Data', placeholder: 'e.g., albumin 1.8 g/dL, pre-albumin 6, BMI 16.2, weight loss 18 lbs/3 months', type: 'textarea' },
+      { id: 'qMalIntake', label: 'Oral/Nutritional Intake Documentation', placeholder: 'e.g., <25% of meals × 5 days, NPO for 3 days, TPN initiated, dietitian consult', type: 'text' },
+      { id: 'qMalCause', label: 'Underlying Clinical Context', placeholder: 'e.g., cancer cachexia, post-surgical, chronic illness, social factors', type: 'text' }
+    ],
+    template: (f, pt, prov, pri) => `PHYSICIAN QUERY — MALNUTRITION — SEVERITY & ETIOLOGY
+MCW Inpatient Coding / CDI
+Priority: ${pri}${pt ? '\nPatient: ' + pt : ''}${prov ? '\nProvider: ' + prov : ''}
+Date of Query: ___________
+
+NUTRITIONAL / ASSESSMENT DATA:
+${f.qMalLabs||'[Labs, anthropometric measurements, weight history]'}
+Intake History: ${f.qMalIntake||'[Oral intake, TPN, enteral feeds]'}
+Clinical Context: ${f.qMalCause||'[Underlying conditions contributing to malnutrition]'}
+
+ASPEN/AND MALNUTRITION CRITERIA REFERENCE:
+  Mild: ≥1 of the following — energy intake <75% for >7d; weight loss 1–2%/wk, 5%/mo, 7.5%/3mo
+  Moderate: ≥2 criteria — weight loss >2%/wk, 5%/mo, 10%/6mo; muscle/fat loss; edema masking weight loss
+  Severe: ≥2 severe criteria — energy intake <50% >5d; significant weight loss >2%/wk; severe muscle/fat depletion
+
+Please clarify the presence and severity of malnutrition:
+
+□ MALNUTRITION — Severity:
+   □ Mild (E44.1)
+   □ Moderate (E44.0)
+   □ Severe — □ Marasmus (E41)  □ Kwashiorkor (E40)  □ Severe protein-calorie malnutrition (E43)
+   Etiology: □ Acute illness/injury  □ Chronic illness  □ Social/environmental  □ Cannot specify
+□ NUTRITIONAL DEFICIENCY — specify: _______________________
+□ AT RISK for malnutrition — not meeting criteria for current malnutrition diagnosis
+□ Malnourished appearance / low albumin — does NOT represent clinically significant malnutrition
+□ Clinically undetermined
+
+Coding Impact: Severe malnutrition = MCC. Moderate/mild = CC. Albumin alone is insufficient — clinical assessment required.
+
+Coder/CDI: _________________ Date: _________
+Physician Response: _________________ Date: _________`
+  },
+
+  heartfailure: {
+    fields: [
+      { id: 'qHfEcho', label: 'Echo / EF Data', placeholder: 'e.g., LVEF 30% (reduced), LVEF 60% (preserved); last echo 2/2024', type: 'text' },
+      { id: 'qHfFindings', label: 'Clinical Findings', placeholder: 'e.g., bilateral lower extremity edema 3+, JVD, pulmonary rales, BNP 2,400, CXR with pulmonary vascular congestion', type: 'textarea' },
+      { id: 'qHfTx', label: 'Treatment for Heart Failure This Admission', placeholder: 'e.g., IV Lasix, fluid restriction, Lasix drip, ultrafiltration, dobutamine', type: 'text' }
+    ],
+    template: (f, pt, prov, pri) => `PHYSICIAN QUERY — HEART FAILURE — TYPE & ACUITY
+MCW Inpatient Coding / CDI
+Priority: ${pri}${pt ? '\nPatient: ' + pt : ''}${prov ? '\nProvider: ' + prov : ''}
+Date of Query: ___________
+
+CARDIAC DATA:
+  Echo / EF: ${f.qHfEcho||'[LVEF, echo findings]'}
+  Clinical Findings: 
+${f.qHfFindings||'[Edema, BNP, imaging, symptoms]'}
+  Treatment Provided: ${f.qHfTx||'[Diuretics, inotropes, other]'}
+
+Please clarify the type and acuity of heart failure:
+
+SYSTOLIC vs. DIASTOLIC:
+□ Systolic Heart Failure — reduced EF (HFrEF; EF typically <40%)
+□ Diastolic Heart Failure — preserved EF (HFpEF; EF typically ≥50%)
+□ Combined systolic and diastolic heart failure
+□ Heart failure, unspecified type — unable to determine from available data
+
+ACUITY:
+□ ACUTE — new onset heart failure; no prior history
+□ CHRONIC — known, stable heart failure; no acute decompensation this admission
+□ ACUTE ON CHRONIC — known chronic HF with acute exacerbation/decompensation this admission
+
+NYHA FUNCTIONAL CLASS (if applicable):
+□ Class I  □ Class II  □ Class III  □ Class IV
+
+Coding Impact: HFrEF vs HFpEF = distinct codes. Acute/chronic distinction = CC vs MCC in combination. Significant DRG impact.
+
+Coder/CDI: _________________ Date: _________
+Physician Response: _________________ Date: _________`
+  },
+
+  dvtpe: {
+    fields: [
+      { id: 'qDvpLocation', label: 'Imaging Findings / Location', placeholder: 'e.g., bilateral PE on CTA; right femoral/popliteal DVT on duplex', type: 'text' },
+      { id: 'qDvpHistory', label: 'Prior History / Relevant Context', placeholder: 'e.g., prior DVT 2021 on anticoagulation; new diagnosis; post-op day 3', type: 'text' },
+      { id: 'qDvpHemo', label: 'Hemodynamic Status / Severity', placeholder: 'e.g., hemodynamically stable; submassive PE with RV strain on echo; massive PE with shock', type: 'text' }
+    ],
+    template: (f, pt, prov, pri) => `PHYSICIAN QUERY — DVT / PULMONARY EMBOLISM — ACUITY & STATUS
+MCW Inpatient Coding / CDI
+Priority: ${pri}${pt ? '\nPatient: ' + pt : ''}${prov ? '\nProvider: ' + prov : ''}
+Date of Query: ___________
+
+IMAGING / LOCATION: ${f.qDvpLocation||'[Imaging findings, anatomical location]'}
+CLINICAL HISTORY: ${f.qDvpHistory||'[Prior history, current anticoagulation status]'}
+HEMODYNAMIC STATUS: ${f.qDvpHemo||'[Stable, submassive, massive, RV strain]'}
+
+Please clarify the nature and acuity of the clot burden:
+
+FOR PULMONARY EMBOLISM:
+□ ACUTE PE — new onset; active clot
+□ CHRONIC PE — organized/established clot without acute component
+□ ACUTE ON CHRONIC PE
+□ Saddle embolus
+□ With acute cor pulmonale / right heart strain
+□ With hemodynamic compromise (massive PE)
+□ Incidental PE — discovered on imaging; no clinical symptoms
+
+FOR DEEP VEIN THROMBOSIS:
+□ ACUTE DVT — new or recent; active thrombus
+□ CHRONIC DVT — old/organized thrombus, not acute
+□ ACUTE ON CHRONIC DVT
+Location: □ Proximal (femoral/popliteal)  □ Distal (tibial/peroneal)  □ Iliac  □ Bilateral
+Extremity: □ Right  □ Left  □ Bilateral  □ Upper extremity (specify: _______)
+
+PROVOCATION:
+□ Provoked — related to: □ Surgery  □ Immobility  □ Malignancy  □ Pregnancy  □ Other: ___
+□ Unprovoked / idiopathic
+
+Coding Impact: Acute vs chronic affects code selection. Acute PE with hemodynamic compromise = higher-severity DRG.
+
+Coder/CDI: _________________ Date: _________
+Physician Response: _________________ Date: _________`
+  },
+
+  // ── UROLOGY ──────────────────────────────────────────────
+  uro_hydronephrosis: {
+    fields: [
+      { id: 'qHydroImaging', label: 'Imaging Findings', placeholder: 'e.g., right hydronephrosis with ureteral dilation, CT urogram 03/10; grade III on ultrasound', type: 'text' },
+      { id: 'qHydroSide', label: 'Laterality', placeholder: 'e.g., right, left, bilateral', type: 'text' },
+      { id: 'qHydroContext', label: 'Clinical Context / Known Etiology', placeholder: 'e.g., ureteral calculus at UVJ, ureteral stricture, prostatic obstruction, post-stent placement', type: 'textarea' }
+    ],
+    template: (f, pt, prov, pri) => `PHYSICIAN QUERY — HYDRONEPHROSIS — GRADE & ETIOLOGY
+MCW Inpatient Coding / CDI (Urology)
+Priority: ${pri}${pt ? '\nPatient: ' + pt : ''}${prov ? '\nProvider: ' + prov : ''}
+Date of Query: ___________
+
+IMAGING: ${f.qHydroImaging||'[Imaging findings]'}
+LATERALITY: ${f.qHydroSide||'[Right / Left / Bilateral]'}
+CLINICAL CONTEXT: 
+${f.qHydroContext||'[Known etiology, associated findings]'}
+
+ICD-10-CM requires documentation of hydronephrosis with or without ureteral obstruction, with specification of the obstructing cause when known.
+
+Please clarify:
+
+LATERALITY:
+□ Right hydronephrosis  □ Left hydronephrosis  □ Bilateral hydronephrosis
+
+WITH OR WITHOUT OBSTRUCTION:
+□ With URETERAL obstruction — specify cause: ___________________
+□ With RENAL CALCULUS obstruction
+□ With URETERAL CALCULUS obstruction — location: □ Upper  □ Middle  □ Lower ureter
+□ With URETEROPELVIC JUNCTION (UPJ) obstruction
+□ With BENIGN PROSTATIC OBSTRUCTION / BPH
+□ Post-procedural / post-stent
+□ Without obstruction
+□ Obstruction present, etiology undetermined
+
+Coding Impact: Hydronephrosis with obstruction vs. without carries different codes; etiology specificity (stone, stricture, BPH) is required for accurate reporting.
+
+Coder/CDI: _________________ Date: _________
+Physician Response: _________________ Date: _________`
+  },
+
+  uro_retention: {
+    fields: [
+      { id: 'qRetVol', label: 'PVR / Voiding Data', placeholder: 'e.g., PVR 650 mL; unable to void × 18 hrs; urethral catheter placed for 800 mL', type: 'text' },
+      { id: 'qRetContext', label: 'Clinical Context / Surgical History', placeholder: 'e.g., POD1 after TURP; known BPH; post-anesthesia; prior history of retention', type: 'textarea' }
+    ],
+    template: (f, pt, prov, pri) => `PHYSICIAN QUERY — URINARY RETENTION — TYPE & CAUSE
+MCW Inpatient Coding / CDI (Urology)
+Priority: ${pri}${pt ? '\nPatient: ' + pt : ''}${prov ? '\nProvider: ' + prov : ''}
+Date of Query: ___________
+
+VOIDING DATA: ${f.qRetVol||'[PVR, cath volume, symptoms]'}
+CLINICAL CONTEXT:
+${f.qRetContext||'[Surgical history, underlying conditions, medications]'}
+
+Please clarify the nature of urinary retention:
+
+TYPE:
+□ ACUTE urinary retention — sudden inability to void; new onset
+□ CHRONIC urinary retention — long-standing inability to fully empty bladder
+□ ACUTE ON CHRONIC urinary retention
+
+ETIOLOGY / CAUSE:
+□ OBSTRUCTIVE — due to: □ BPH  □ Urethral stricture  □ Prostate cancer  □ Calculus  □ Post-op edema  □ Other: ___
+□ NEUROGENIC — due to: □ Spinal cord injury  □ Neurological condition  □ Diabetic neuropathy  □ Other: ___
+□ DRUG-INDUCED — due to: □ Anticholinergics  □ Opioids  □ Other medication: ___________
+□ POST-PROCEDURAL RETENTION — procedure: _______________________
+   Is this a COMPLICATION or an EXPECTED/INHERENT outcome of the procedure?
+   □ Complication  □ Expected outcome  □ Undetermined
+□ FUNCTIONAL (non-obstructive, non-neurogenic): _______________________
+□ Etiology undetermined
+
+Coding Impact: Etiology specificity required for ICD-10-CM accuracy; post-procedural vs. underlying condition affects sequencing.
+
+Coder/CDI: _________________ Date: _________
+Physician Response: _________________ Date: _________`
+  },
+
+  uro_hematuria: {
+    fields: [
+      { id: 'qHemUa', label: 'Urinalysis / Findings', placeholder: 'e.g., gross hematuria; UA >50 RBC/hpf; blood on dipstick only; urine bright red', type: 'text' },
+      { id: 'qHemContext', label: 'Clinical Context / Work-Up', placeholder: 'e.g., post-TURP day 1; known bladder cancer; cystoscopy performed; no lesion found', type: 'textarea' }
+    ],
+    template: (f, pt, prov, pri) => `PHYSICIAN QUERY — HEMATURIA — SIGNIFICANCE & ORIGIN
+MCW Inpatient Coding / CDI (Urology)
+Priority: ${pri}${pt ? '\nPatient: ' + pt : ''}${prov ? '\nProvider: ' + prov : ''}
+Date of Query: ___________
+
+UROLOGICAL FINDINGS: ${f.qHemUa||'[UA results, gross appearance]'}
+CLINICAL CONTEXT:
+${f.qHemContext||'[Work-up performed, underlying conditions, procedures]'}
+
+Please clarify:
+
+CLASSIFICATION:
+□ GROSS HEMATURIA — visually apparent blood in urine
+□ MICROSCOPIC HEMATURIA — only detected on UA/microscopy; no gross blood
+
+CLINICAL SIGNIFICANCE:
+□ Clinically significant — being actively evaluated and/or managed
+□ Incidental finding — clinically insignificant; no workup required
+
+SUSPECTED ORIGIN (if determined):
+□ Bladder origin — due to: □ Bladder cancer  □ Cystitis  □ Post-procedure  □ Calculus  □ Other: ___
+□ Upper tract origin — due to: □ Kidney tumor  □ Renal calculus  □ Pyelonephritis  □ Other: ___
+□ Prostate origin — due to: □ BPH  □ Prostate cancer  □ Post-procedure  □ Other: ___
+□ Urethral origin
+□ Anticoagulation-related hematuria
+□ Origin undetermined
+
+Coding Impact: Gross vs. microscopic and origin specificity affect ICD-10-CM code selection; post-procedural requires complication code sequencing.
+
+Coder/CDI: _________________ Date: _________
+Physician Response: _________________ Date: _________`
+  },
+
+  uro_calculus: {
+    fields: [
+      { id: 'qCalcImaging', label: 'Imaging / Stone Data', placeholder: 'e.g., 8mm calculus at right UVJ on CT; bilateral renal calculi; staghorn calculus left kidney', type: 'text' },
+      { id: 'qCalcSide', label: 'Laterality', placeholder: 'e.g., right, left, bilateral', type: 'text' },
+      { id: 'qCalcTx', label: 'Treatment / Intervention', placeholder: 'e.g., ESWL, ureteroscopy with laser lithotripsy, stent placed, conservative management', type: 'text' }
+    ],
+    template: (f, pt, prov, pri) => `PHYSICIAN QUERY — RENAL / URETERAL CALCULUS SPECIFICITY
+MCW Inpatient Coding / CDI (Urology)
+Priority: ${pri}${pt ? '\nPatient: ' + pt : ''}${prov ? '\nProvider: ' + prov : ''}
+Date of Query: ___________
+
+IMAGING: ${f.qCalcImaging||'[CT/imaging findings, stone size]'}
+LATERALITY: ${f.qCalcSide||'[Right / Left / Bilateral]'}
+TREATMENT: ${f.qCalcTx||'[Intervention or conservative management]'}
+
+ICD-10-CM requires specificity of calculus location and laterality.
+
+Please clarify:
+
+LOCATION:
+□ KIDNEY (renal calculus) — □ Right  □ Left  □ Bilateral
+□ URETER — □ Right  □ Left  □ Bilateral
+   Ureteral location: □ Upper third  □ Middle third  □ Lower third (includes UVJ)
+□ KIDNEY AND URETER — □ Right  □ Left  □ Bilateral
+□ BLADDER — vesical calculus
+□ URETHRA
+□ Multiple locations — specify: _______________________
+
+WITH OR WITHOUT OBSTRUCTION:
+□ WITH hydronephrosis / obstruction
+□ WITHOUT obstruction
+
+STONE TYPE (if known from analysis):
+□ Calcium oxalate  □ Calcium phosphate  □ Uric acid  □ Struvite  □ Cystine  □ Mixed  □ Unknown
+
+Coder/CDI: _________________ Date: _________
+Physician Response: _________________ Date: _________`
+  },
+
+  uro_renalfunction: {
+    fields: [
+      { id: 'qRfCr', label: 'Current & Baseline Creatinine / GFR', placeholder: 'e.g., current Cr 2.8, GFR 22; baseline Cr 1.8, GFR 38 per prior labs', type: 'text' },
+      { id: 'qRfContext', label: 'Clinical Context / Urology Procedure', placeholder: 'e.g., post-nephrectomy; single kidney; bilateral ureteral obstruction; contrast exposure', type: 'textarea' }
+    ],
+    template: (f, pt, prov, pri) => `PHYSICIAN QUERY — RENAL FUNCTION — CKD STAGE / AKI CLARIFICATION
+MCW Inpatient Coding / CDI (Urology)
+Priority: ${pri}${pt ? '\nPatient: ' + pt : ''}${prov ? '\nProvider: ' + prov : ''}
+Date of Query: ___________
+
+RENAL FUNCTION DATA:
+  Current Cr / GFR: ${f.qRfCr||'[Current and baseline values]'}
+  Clinical Context:
+${f.qRfContext||'[Urological history, procedures, relevant conditions]'}
+
+Please clarify the patient's renal diagnosis for accurate ICD-10-CM coding:
+
+□ ACUTE KIDNEY INJURY (AKI) — Stage: □ 1  □ 2  □ 3  □ Unspecified
+   Etiology: □ Obstructive (ureteral/calculus)  □ Post-procedural  □ Contrast-induced  □ Pre-renal  □ Other: ___
+□ CHRONIC KIDNEY DISEASE (CKD) — Stage: □ 1  □ 2  □ 3a  □ 3b  □ 4  □ 5  □ ESRD (on dialysis)
+□ ACUTE ON CHRONIC KIDNEY DISEASE — AKI superimposed on CKD Stage: _______
+□ SOLITARY KIDNEY with impaired function — right / left / transplanted
+□ POST-NEPHRECTOMY renal insufficiency
+□ OBSTRUCTIVE NEPHROPATHY — due to: _______________________
+□ Elevated creatinine — no reportable renal diagnosis at this time
+□ Clinically undetermined
+
+Coding Impact: CKD stage affects CC/MCC status. AKI = MCC. Accurate staging requires physician documentation — GFR alone is insufficient.
+
+Coder/CDI: _________________ Date: _________
+Physician Response: _________________ Date: _________`
+  },
+
+  // ── OPHTHALMOLOGY ────────────────────────────────────────
+  oph_cataract: {
+    fields: [
+      { id: 'qCatSide', label: 'Eye / Laterality', placeholder: 'e.g., right eye, left eye, bilateral', type: 'text' },
+      { id: 'qCatFindings', label: 'Operative / Clinical Findings', placeholder: 'e.g., dense brunescent nuclear cataract; posterior capsule already compromised; prior vitrectomy; small pupil', type: 'textarea' }
+    ],
+    template: (f, pt, prov, pri) => `PHYSICIAN QUERY — CATARACT — TYPE & COMPLEXITY
+MCW Inpatient Coding / CDI (Ophthalmology)
+Priority: ${pri}${pt ? '\nPatient: ' + pt : ''}${prov ? '\nProvider: ' + prov : ''}
+Date of Query: ___________
+
+EYE / LATERALITY: ${f.qCatSide||'[Right / Left / Bilateral]'}
+CLINICAL / OPERATIVE FINDINGS:
+${f.qCatFindings||'[Morphology, complications, surgical challenges]'}
+
+Please clarify the type of cataract and complexity of the surgical extraction:
+
+CATARACT TYPE:
+□ Age-related / Senile — □ Nuclear  □ Cortical  □ Posterior subcapsular  □ Combined
+□ Traumatic cataract — □ Right eye  □ Left eye
+□ Diabetic cataract — related to diabetes mellitus
+□ Drug-induced cataract — due to: _______________________
+□ Secondary cataract / posterior capsule opacification (PCO) — post prior cataract surgery
+□ Congenital / infantile cataract
+□ Cataract — type unspecified
+
+SURGICAL COMPLEXITY (CPT 66982 vs. 66984):
+□ ROUTINE (66984) — Standard phacoemulsification without unusual circumstances
+□ COMPLEX (66982) — Requires devices or techniques NOT used in routine surgery:
+   □ Iris hook/ring required for small pupil
+   □ Malyugin ring or similar device
+   □ Capsule tension ring required
+   □ Posterior capsule compromised / absent
+   □ Prior vitrectomy in this eye
+   □ Extremely dense / brunescent lens
+   □ Other complex circumstance: _______________________
+
+Coding Impact: Cataract type determines ICD-10-CM code. Complex cataract surgery (66982) requires specific operative documentation.
+
+Coder/CDI: _________________ Date: _________
+Physician Response: _________________ Date: _________`
+  },
+
+  oph_retinal: {
+    fields: [
+      { id: 'qRetSide', label: 'Eye / Laterality', placeholder: 'e.g., right eye', type: 'text' },
+      { id: 'qRetImaging', label: 'Clinical / Imaging Findings', placeholder: 'e.g., macula-off RD superior quadrant; tractional detachment from proliferative DR; flat retina post-injection', type: 'textarea' }
+    ],
+    template: (f, pt, prov, pri) => `PHYSICIAN QUERY — RETINAL CONDITION — TYPE CLARIFICATION
+MCW Inpatient Coding / CDI (Ophthalmology)
+Priority: ${pri}${pt ? '\nPatient: ' + pt : ''}${prov ? '\nProvider: ' + prov : ''}
+Date of Query: ___________
+
+EYE / LATERALITY: ${f.qRetSide||'[Right / Left / Bilateral]'}
+CLINICAL FINDINGS:
+${f.qRetImaging||'[Exam and imaging findings]'}
+
+Please clarify the type of retinal condition:
+
+RETINAL DETACHMENT TYPE:
+□ RHEGMATOGENOUS — caused by a break/tear/hole in the retina
+   Macula status: □ Macula ON (attached)  □ Macula OFF (detached)
+□ TRACTIONAL — caused by fibrovascular proliferation pulling the retina
+□ EXUDATIVE / SEROUS — caused by fluid accumulation without break
+□ COMBINED TRACTIONAL AND RHEGMATOGENOUS
+
+OTHER RETINAL CONDITIONS:
+□ Retinal break WITHOUT detachment — □ Round hole  □ Horseshoe tear  □ Giant tear
+□ CHOROIDAL DETACHMENT
+□ MACULAR HOLE — □ Stage 1  □ Stage 2  □ Stage 3  □ Stage 4
+□ EPIRETINAL MEMBRANE (macular pucker)
+□ CENTRAL RETINAL ARTERY OCCLUSION — □ Right  □ Left  □ With neovascularization
+□ CENTRAL RETINAL VEIN OCCLUSION — □ Right  □ Left
+□ AGE-RELATED MACULAR DEGENERATION — □ Dry  □ Wet (neovascular)  □ Right  □ Left
+□ DIABETIC MACULAR EDEMA — □ Right  □ Left  □ Bilateral
+□ VITREOUS HEMORRHAGE — □ Right  □ Left
+
+Coder/CDI: _________________ Date: _________
+Physician Response: _________________ Date: _________`
+  },
+
+  oph_glaucoma: {
+    fields: [
+      { id: 'qGlaSide', label: 'Eye / Laterality', placeholder: 'e.g., right eye, bilateral', type: 'text' },
+      { id: 'qGlaIop', label: 'IOP / Clinical Data', placeholder: 'e.g., IOP 42 mmHg right eye; cupping 0.8/0.8; visual field defect superior arcuate', type: 'textarea' }
+    ],
+    template: (f, pt, prov, pri) => `PHYSICIAN QUERY — GLAUCOMA — TYPE & STAGE
+MCW Inpatient Coding / CDI (Ophthalmology)
+Priority: ${pri}${pt ? '\nPatient: ' + pt : ''}${prov ? '\nProvider: ' + prov : ''}
+Date of Query: ___________
+
+EYE / LATERALITY: ${f.qGlaSide||'[Right / Left / Bilateral]'}
+CLINICAL DATA:
+${f.qGlaIop||'[IOP readings, cup-to-disc ratio, VF findings, angle exam]'}
+
+Please clarify the type and stage of glaucoma:
+
+TYPE:
+□ OPEN-ANGLE GLAUCOMA — □ Primary  □ Low tension / normal tension  □ Capsular (pseudoexfoliation)  □ Pigmentary
+□ ANGLE-CLOSURE GLAUCOMA — □ Primary: □ Acute  □ Chronic  □ Intermittent  □ Secondary
+□ SECONDARY GLAUCOMA — due to: □ Trauma  □ Inflammation  □ Neovascularization  □ Drugs (steroid-induced)  □ Other: ___
+□ GLAUCOMA SUSPECT / Ocular hypertension — no confirmed glaucomatous damage
+□ CONGENITAL / DEVELOPMENTAL GLAUCOMA
+□ Glaucoma — type undetermined
+
+STAGE (ICD-10-CM):
+□ Mild / Early — initial (minimal VF defects)
+□ Moderate — moderate VF loss
+□ Severe — advanced VF loss; severe cupping
+□ Indeterminate — insufficient data for staging
+□ Unspecified stage
+
+LATERALITY:
+□ Right eye  □ Left eye  □ Bilateral  □ Unspecified
+
+Coding Impact: ICD-10-CM requires glaucoma type + laterality + stage (7th character). Full specificity required for accurate code.
+
+Coder/CDI: _________________ Date: _________
+Physician Response: _________________ Date: _________`
+  },
+
+  oph_laterality: {
+    fields: [
+      { id: 'qOphDx', label: 'Ophthalmic Diagnosis / Procedure', placeholder: 'e.g., cataract extraction, retinal detachment repair, corneal ulcer', type: 'text' },
+      { id: 'qOphDoc', label: 'Where Documented / Ambiguity', placeholder: 'e.g., op note says "left eye" but H&P says "right eye"; bilateral not specified in operative report', type: 'text' }
+    ],
+    template: (f, pt, prov, pri) => `PHYSICIAN QUERY — OPHTHALMOLOGY LATERALITY CLARIFICATION
+MCW Inpatient Coding / CDI (Ophthalmology)
+Priority: ${pri}${pt ? '\nPatient: ' + pt : ''}${prov ? '\nProvider: ' + prov : ''}
+Date of Query: ___________
+
+DIAGNOSIS / PROCEDURE: ${f.qOphDx||'[Ophthalmic condition or procedure]'}
+DOCUMENTATION REVIEWED: ${f.qOphDoc||'[Location of ambiguity]'}
+
+ICD-10-CM ophthalmology codes require laterality specification. Please clarify:
+
+□ RIGHT EYE (OD)
+□ LEFT EYE (OS)
+□ BILATERAL — both eyes affected / treated
+□ Unspecified — laterality cannot be determined clinically
+□ Other clarification: _______________________
+
+Coder/CDI: _________________ Date: _________
+Physician Response: _________________ Date: _________`
+  },
+
+  // ── OTOLARYNGOLOGY ───────────────────────────────────────
+  oto_hearingloss: {
+    fields: [
+      { id: 'qHlAudio', label: 'Audiogram / Clinical Findings', placeholder: 'e.g., bilateral SNHL moderate-severe on audiogram; conductive loss right ear; mixed loss', type: 'text' },
+      { id: 'qHlSide', label: 'Laterality', placeholder: 'e.g., right, left, bilateral', type: 'text' },
+      { id: 'qHlContext', label: 'Clinical Context', placeholder: 'e.g., post-cochlear implant; chronic otitis media; noise-induced; sudden onset; age-related', type: 'textarea' }
+    ],
+    template: (f, pt, prov, pri) => `PHYSICIAN QUERY — HEARING LOSS — TYPE & LATERALITY
+MCW Inpatient Coding / CDI (Otolaryngology)
+Priority: ${pri}${pt ? '\nPatient: ' + pt : ''}${prov ? '\nProvider: ' + prov : ''}
+Date of Query: ___________
+
+AUDIOMETRIC / CLINICAL DATA: ${f.qHlAudio||'[Audiogram results, clinical findings]'}
+LATERALITY: ${f.qHlSide||'[Right / Left / Bilateral]'}
+CLINICAL CONTEXT:
+${f.qHlContext||'[Etiology, procedures, associated conditions]'}
+
+Please clarify the type and nature of hearing loss:
+
+TYPE:
+□ CONDUCTIVE — problem with sound transmission through the outer/middle ear
+□ SENSORINEURAL (SNHL) — problem in inner ear, cochlea, or auditory nerve
+□ MIXED — combined conductive and sensorineural components
+□ CENTRAL — problem with central auditory processing (rare)
+
+LATERALITY:
+□ Right ear  □ Left ear  □ Bilateral  □ Unspecified
+
+SEVERITY (if audiogram available):
+□ Mild (26–40 dB HL)  □ Moderate (41–55 dB)  □ Moderately-severe (56–70 dB)
+□ Severe (71–90 dB)  □ Profound (>90 dB)
+
+ETIOLOGY (if determinable):
+□ Age-related (presbycusis)
+□ Noise-induced
+□ Chronic otitis media / chronic suppurative OM
+□ Otosclerosis
+□ Sudden sensorineural hearing loss (SSNHL) — idiopathic
+□ Post-procedure (specify): _______________________
+□ Ototoxic drug exposure (specify drug): _______________________
+□ Congenital
+□ Etiology undetermined
+
+Coding Impact: Conductive vs. SNHL vs. mixed have distinct ICD-10-CM codes; laterality required for accurate 7th character assignment.
+
+Coder/CDI: _________________ Date: _________
+Physician Response: _________________ Date: _________`
+  },
+
+  oto_sinus: {
+    fields: [
+      { id: 'qSinFindings', label: 'Pre-op Imaging / CT Findings', placeholder: 'e.g., bilateral maxillary and ethmoid opacification on CT; right frontal sinusitis; sphenoid involvement', type: 'textarea' },
+      { id: 'qSinProcedure', label: 'Procedure as Documented', placeholder: 'e.g., bilateral FESS; nasal polypectomy; septoplasty with turbinate reduction', type: 'text' }
+    ],
+    template: (f, pt, prov, pri) => `PHYSICIAN QUERY — SINUS PROCEDURE — EXTENT & SINUSES INVOLVED
+MCW Inpatient Coding / CDI (Otolaryngology)
+Priority: ${pri}${pt ? '\nPatient: ' + pt : ''}${prov ? '\nProvider: ' + prov : ''}
+Date of Query: ___________
+
+PRE-OP IMAGING / FINDINGS:
+${f.qSinFindings||'[CT sinus findings, involved sinuses]'}
+DOCUMENTED PROCEDURE: ${f.qSinProcedure||'[Procedure name as charted]'}
+
+CPT and ICD-10-PCS codes for sinus surgery require specificity regarding which sinuses were addressed and the extent of the procedure. Please clarify:
+
+SINUSES TREATED (check all that apply):
+□ Maxillary — □ Right  □ Left  □ Bilateral
+□ Ethmoid — □ Anterior  □ Total (anterior + posterior)  □ Right  □ Left  □ Bilateral
+□ Frontal — □ Right  □ Left  □ Bilateral
+□ Sphenoid — □ Right  □ Left  □ Bilateral
+
+EXTENT OF ETHMOIDECTOMY (if performed):
+□ Partial ethmoidectomy (anterior only)
+□ Total ethmoidectomy (anterior + posterior)
+
+ADDITIONAL PROCEDURES (check all that apply):
+□ Maxillary antrostomy — □ with tissue removal  □ without
+□ Nasal polypectomy
+□ Turbinate reduction — method: □ Submucosal resection  □ Microdebrider  □ Cautery  □ Fracture
+□ Septoplasty
+□ Balloon sinuplasty — which sinus(es): _______________________
+
+ICD-10-CM DIAGNOSIS:
+□ Acute sinusitis  □ Chronic sinusitis  □ Nasal polyps  □ Other: ___________
+
+Coding Impact: Specific sinuses determine correct CPT codes (31254/31255/31256/31267/31276/31287). Bilateral procedures require modifier 50 review per payer.
+
+Coder/CDI: _________________ Date: _________
+Physician Response: _________________ Date: _________`
+  },
+
+  oto_trach: {
+    fields: [
+      { id: 'qTrachIndication', label: 'Clinical Indication / Reason for Tracheostomy', placeholder: 'e.g., prolonged mechanical ventilation, upper airway obstruction, laryngeal CA, failed extubation attempts', type: 'textarea' },
+      { id: 'qTrachType', label: 'Procedure Details', placeholder: 'e.g., planned open tracheostomy OR1, percutaneous bedside trach, emergent cricothyrotomy converted to trach', type: 'text' }
+    ],
+    template: (f, pt, prov, pri) => `PHYSICIAN QUERY — TRACHEOSTOMY — INDICATION & TYPE
+MCW Inpatient Coding / CDI (Otolaryngology)
+Priority: ${pri}${pt ? '\nPatient: ' + pt : ''}${prov ? '\nProvider: ' + prov : ''}
+Date of Query: ___________
+
+CLINICAL INDICATION:
+${f.qTrachIndication||'[Clinical reason for tracheostomy]'}
+PROCEDURE DETAILS: ${f.qTrachType||'[Operative approach, timing, setting]'}
+
+Please clarify the following for accurate CPT and ICD-10-PCS coding:
+
+PROCEDURE TYPE:
+□ PLANNED (Elective) tracheostomy — scheduled, non-emergent; performed in OR
+   □ Standard open surgical approach (31600 / 31601 if <2 yrs)
+   □ Percutaneous dilational tracheostomy (31603 modifier may apply)
+□ EMERGENCY tracheostomy — due to acute airway compromise
+   □ Transtracheal / cricothyrotomy converted to tracheostomy (31603)
+□ REVISION of existing tracheostomy / tracheostomy change
+□ DECANNULATION — removal of tracheostomy tube
+
+PRIMARY INDICATION:
+□ Prolonged mechanical ventilation (expected >7–14 days)
+□ Upper airway obstruction — due to: □ Tumor  □ Edema  □ Foreign body  □ Trauma  □ Other: ___
+□ Airway protection — due to: □ Aspiration risk  □ Neurological impairment  □ Other: ___
+□ Failed extubation / difficult airway
+□ Laryngeal / tracheal pathology: _______________________
+□ Other: _______________________
+
+DOES THE PROCEDURE QUALIFY UNDER RESPIRATORY SYSTEM MDC 04 FOR DRG?
+□ This is the principal OR procedure  □ Secondary procedure
+
+Coding Impact: Tracheostomy with MV ≥96 hours = DRG 003 (highest-weighted surgical DRG). Procedure type affects ICD-10-PCS Root Operation (Bypass vs Drainage).
+
+Coder/CDI: _________________ Date: _________
+Physician Response: _________________ Date: _________`
+  },
+
+  oto_laterality: {
+    fields: [
+      { id: 'qOtoDx', label: 'Diagnosis / Procedure Requiring Laterality', placeholder: 'e.g., otitis media, tympanostomy tube placement, cochlear implant, mastoidectomy', type: 'text' },
+      { id: 'qOtoDoc', label: 'Documentation Location / Source of Ambiguity', placeholder: 'e.g., op note specifies right ear but consent form says left; bilateral per audiogram but op note only mentions one side', type: 'text' }
+    ],
+    template: (f, pt, prov, pri) => `PHYSICIAN QUERY — OTOLARYNGOLOGY LATERALITY CLARIFICATION
+MCW Inpatient Coding / CDI (Otolaryngology)
+Priority: ${pri}${pt ? '\nPatient: ' + pt : ''}${prov ? '\nProvider: ' + prov : ''}
+Date of Query: ___________
+
+DIAGNOSIS / PROCEDURE: ${f.qOtoDx||'[OTO condition or procedure]'}
+DOCUMENTATION REVIEWED: ${f.qOtoDoc||'[Location of ambiguity]'}
+
+ICD-10-CM and ICD-10-PCS require laterality specification for ear/sinus/nasal procedures and diagnoses. Please clarify:
+
+□ RIGHT ear / RIGHT side
+□ LEFT ear / LEFT side
+□ BILATERAL — both sides affected / treated
+□ Unspecified — laterality cannot be determined clinically
+□ Other clarification: _______________________
+
+Coder/CDI: _________________ Date: _________
+Physician Response: _________________ Date: _________`
   }
 };
+
+// Build dropdown based on active category
+let activeQueryCat = 'general';
+function filterQueryCat(btn, cat) {
+  document.querySelectorAll('#queryCatTabs .spec-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeQueryCat = cat;
+  buildQueryDropdown();
+  updateQueryForm();
+  document.getElementById('queryOutput').style.display = 'none';
+}
+
+function buildQueryDropdown() {
+  const sel = document.getElementById('queryType');
+  const keys = queryCategories[activeQueryCat];
+  sel.innerHTML = keys.map(k => `<option value="${k}">${queryLabels[k]||k}</option>`).join('');
+}
 
 function updateQueryForm() {
   const type = document.getElementById('queryType').value;
   const config = queryConfigs[type];
+  if (!config) return;
   const container = document.getElementById('queryFields');
   document.getElementById('queryOutput').style.display = 'none';
   container.innerHTML = config.fields.map(f => `
     <div class="form-group">
       <label class="field-label">${f.label}</label>
-      <input type="text" id="${f.id}" placeholder="${f.placeholder}">
+      ${f.type === 'textarea'
+        ? `<textarea id="${f.id}" placeholder="${f.placeholder}" rows="3"></textarea>`
+        : `<input type="text" id="${f.id}" placeholder="${f.placeholder}">`}
     </div>
   `).join('');
 }
@@ -1488,21 +2717,106 @@ function updateQueryForm() {
 function generateQuery() {
   const type = document.getElementById('queryType').value;
   const config = queryConfigs[type];
+  if (!config) return;
   const fields = {};
   config.fields.forEach(f => { fields[f.id] = document.getElementById(f.id)?.value || ''; });
   const pt = document.getElementById('queryPatientInfo').value;
-  const text = config.template(fields, pt);
+  const prov = document.getElementById('queryProvider').value;
+  const pri = document.querySelector('input[name="queryPriority"]:checked')?.value || 'Routine';
+  const text = config.template(fields, pt, prov, pri);
   document.getElementById('queryText').innerText = text;
   document.getElementById('queryOutput').style.display = 'block';
+  document.getElementById('queryOutput').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 function copyQuery() {
   const text = document.getElementById('queryText').innerText;
   navigator.clipboard.writeText(text).then(() => {
     const btn = document.querySelector('.copy-btn');
+    const orig = btn.innerText;
     btn.innerText = '✓ Copied!';
-    setTimeout(() => { btn.innerText = 'Copy'; }, 1800);
+    setTimeout(() => { btn.innerText = orig; }, 1800);
   });
+}
+
+function printQuery() {
+  const text = document.getElementById('queryText').innerText;
+  const win = window.open('', '_blank');
+  win.document.write(`<html><head><title>Physician Query</title><style>
+    body { font-family: 'Courier New', monospace; font-size: 12px; margin: 40px; line-height: 1.6; color: #000; }
+    pre { white-space: pre-wrap; word-wrap: break-word; }
+    @media print { body { margin: 20px; } }
+  </style></head><body><pre>${text.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre></body></html>`);
+  win.document.close();
+  win.focus();
+  setTimeout(() => { win.print(); }, 300);
+}
+
+// ── Query Log ──
+const queryLog = [];
+function saveToLog() {
+  const type = document.getElementById('queryType').value;
+  const text = document.getElementById('queryText').innerText;
+  if (!text || text.length < 10) return;
+  const entry = {
+    id: Date.now(),
+    type: queryLabels[type] || type,
+    text,
+    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    patient: document.getElementById('queryPatientInfo').value || ''
+  };
+  queryLog.unshift(entry);
+  renderLog();
+  const btn = document.querySelectorAll('.copy-btn')[2];
+  btn.innerText = '✓ Saved!';
+  setTimeout(() => { btn.innerText = 'Save to Log'; }, 1800);
+}
+
+function renderLog() {
+  const list = document.getElementById('queryLogList');
+  if (queryLog.length === 0) {
+    list.innerHTML = '<div style="text-align:center; color:var(--muted); font-size:0.85em; padding:20px 0;">No queries saved yet — generate a query and click "Save to Log"</div>';
+    return;
+  }
+  list.innerHTML = queryLog.map(e => `
+    <div class="query-log-entry" id="log-${e.id}">
+      <div class="log-entry-header">
+        <span class="log-entry-title">${e.type}${e.patient ? ' — ' + e.patient : ''}</span>
+        <span class="log-entry-meta">${e.time}</span>
+      </div>
+      <div class="log-entry-preview">${e.text}</div>
+      <div class="log-entry-actions">
+        <button class="log-btn" onclick="copyLogEntry(${e.id})">Copy</button>
+        <button class="log-btn" onclick="printLogEntry(${e.id})">Print</button>
+        <button class="log-btn danger" onclick="deleteLogEntry(${e.id})">Remove</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function copyLogEntry(id) {
+  const entry = queryLog.find(e => e.id === id);
+  if (!entry) return;
+  navigator.clipboard.writeText(entry.text);
+}
+
+function printLogEntry(id) {
+  const entry = queryLog.find(e => e.id === id);
+  if (!entry) return;
+  const win = window.open('', '_blank');
+  win.document.write(`<html><head><title>Physician Query</title><style>body{font-family:'Courier New',monospace;font-size:12px;margin:40px;line-height:1.6;}pre{white-space:pre-wrap;}</style></head><body><pre>${entry.text.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre></body></html>`);
+  win.document.close(); win.focus();
+  setTimeout(() => win.print(), 300);
+}
+
+function deleteLogEntry(id) {
+  const idx = queryLog.findIndex(e => e.id === id);
+  if (idx > -1) { queryLog.splice(idx, 1); renderLog(); }
+}
+
+function clearLog() {
+  if (queryLog.length === 0) return;
+  if (confirm('Clear all saved queries from this session?')) { queryLog.length = 0; renderLog(); }
 }
 
 // ===== FLASHCARDS =====
@@ -1603,6 +2917,7 @@ function filterCards(btn, cat) {
 
 // ===== INIT =====
 updateUI();
+buildQueryDropdown();
 updateQueryForm();
 renderCard();
 </script>
