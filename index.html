@@ -1,402 +1,1529 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profee Coding Toolkit</title>
-    <style>
-        /* Base Styles with Google Sans */
-        body { 
-            font-family: 'Google Sans', Roboto, Arial, sans-serif; 
-            background-color: #f4f7f6;
-            color: #333;
-            margin: 0;
-            padding: 0;
-            line-height: 1.5;
-        }
-        
-        /* Navigation Bar Styles - Dark Purple Theme */
-        .navbar {
-            background-color: #554265; /* Dark Purple */
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        .navbar a {
-            color: white;
-            text-align: center;
-            padding: 14px 20px;
-            text-decoration: none;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        .navbar a:hover {
-            background-color: #310b60; /* Darker Purple on Hover */
-        }
-        .navbar a.active {
-            background-color: #7c6093; /* Lighter Purple for Active Tab */
-        }
-        .navbar a.ext-link {
-            background-color: #310b60;
-            border-left: 1px solid #7c6093;
-        }
-        .navbar a.ext-link:hover {
-            background-color: #7c6093;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MCW Inpatient Profee Toolkit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #12111a;
+    --surface: #1e1c2b;
+    --surface2: #28253a;
+    --border: #3a3652;
+    --primary: #a374f7;
+    --primary-dark: #7c52d9;
+    --primary-glow: rgba(163,116,247,0.18);
+    --gold: #e8c547;
+    --teal: #3dd6c8;
+    --red: #f47474;
+    --text: #ece8f8;
+    --muted: #8d88ab;
+    --font-main: 'Outfit', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --radius: 10px;
+    --shadow: 0 4px 20px rgba(0,0,0,0.4);
+  }
 
-        /* Main Container */
-        .container {
-            padding: 20px; 
-            max-width: 600px; 
-            margin: auto; 
-        }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        /* Page View Logic */
-        .page-view { display: none; }
-        .page-view.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--font-main);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+  /* Background texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at 20% 10%, rgba(163,116,247,0.07) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 80%, rgba(61,214,200,0.04) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
 
-        /* Tool Styles */
-        h2 { color: #554265; text-align: center; } /* Dark Purple */
-        .section { background-color: white; margin-bottom: 20px; padding: 20px; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .form-group { margin-bottom: 15px; }
-        label { font-weight: bold; display: block; margin-bottom: 8px; color: #554265; }
-        select, input[type="number"], input[type="text"] { width: 100%; padding: 12px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; box-sizing: border-box; font-family: inherit; }
-        select:focus, input:focus { outline: none; border-color: #7c6093; box-shadow: 0 0 5px rgba(123, 31, 162, 0.3); }
-        .radio-group label { font-weight: normal; display: inline-block; margin-right: 15px; cursor: pointer; color: #333; }
-        .note { font-size: 0.85em; color: #7f8c8d; margin-top: 5px; font-style: italic; }
-        
-        /* Primary Buttons */
-        button { width: 100%; padding: 15px; background-color: #7c6093; color: white; border: none; border-radius: 5px; font-size: 18px; font-weight: bold; cursor: pointer; transition: background 0.3s; font-family: inherit; }
-        button:hover { background-color: #554265; }
-        
-        .result-box { margin-top: 20px; font-weight: bold; font-size: 1.2em; text-align: center; padding: 20px; border-radius: 5px; display: none; }
-        .success { background-color: #f4e8fa; border: 2px solid #7c6093; color: #554265; }
-        .error { background-color: #fdebd0; border: 2px solid #e67e22; color: #d35400; }
-        
-        /* Modifier Dictionary Styles */
-        .mod-search { margin-bottom: 20px; }
-        .mod-card { background: white; border-left: 5px solid #7b1fa2; padding: 15px; margin-bottom: 15px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .mod-card h3 { margin: 0 0 5px 0; color: #554265; display: flex; align-items: center; justify-content: space-between; }
-        .mod-badge { background: #f4e8fa; color: #7b1fa2; padding: 3px 8px; border-radius: 12px; font-size: 0.8em; font-weight: bold; }
-        .mod-card p { margin: 0; font-size: 0.95em; color: #555; }
-        .hidden { display: none !important; }
+  /* ===== NAVBAR ===== */
+  .navbar {
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    background: rgba(18,17,26,0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 0 12px;
+    gap: 2px;
+  }
 
-        /* Flashcard Styles */
-        .flashcard-container { perspective: 1000px; margin: 20px auto; width: 100%; height: 320px; cursor: pointer; }
-        .flashcard-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.6s; transform-style: preserve-3d; }
-        .flashcard-container.flipped .flashcard-inner { transform: rotateY(180deg); }
-        .flashcard-front, .flashcard-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px; box-sizing: border-box; border-radius: 12px; box-shadow: 0 6px 12px rgba(0,0,0,0.1); border: 2px solid #7b1fa2; }
-        .flashcard-front { background-color: white; color: #554265; }
-        .flashcard-back { background-color: #7b1fa2; color: white; transform: rotateY(180deg); }
-        .flashcard-front h3 { margin-bottom: 15px; font-size: 1.3em; }
-        .flashcard-back h3 { margin-bottom: 15px; color: #f4e8fa; }
-        .flashcard-text { font-size: 1.1em; }
-        .flashcard-controls { display: flex; justify-content: space-between; margin-top: 20px; }
-        .flashcard-btn { width: 48%; padding: 12px; background-color: #554265; font-size: 16px; border-radius: 8px; }
-        .flashcard-btn:hover { background-color: #310b60; }
-        .card-counter { text-align: center; margin-top: 15px; color: #7f8c8d; font-weight: bold; }
-        .hint { font-size: 0.85em; color: #95a5a6; margin-top: 20px; font-style: italic; }
-        .flashcard-back .hint { color: #f4e8fa; }
-    </style>
+  .nav-brand {
+    font-family: var(--font-mono);
+    font-size: 0.75em;
+    font-weight: 600;
+    color: var(--primary);
+    padding: 12px 10px 12px 4px;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    border-right: 1px solid var(--border);
+    margin-right: 6px;
+  }
+
+  .navbar a {
+    color: var(--muted);
+    text-align: center;
+    padding: 12px 14px;
+    text-decoration: none;
+    font-size: 0.82em;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    transition: color 0.2s, background 0.2s;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+  .navbar a:hover { color: var(--text); background: var(--surface); }
+  .navbar a.active { color: var(--primary); background: var(--primary-glow); }
+  .navbar a.ext-link {
+    color: var(--gold);
+    border: 1px solid rgba(232,197,71,0.3);
+    margin-left: 4px;
+  }
+  .navbar a.ext-link:hover { background: rgba(232,197,71,0.1); }
+
+  /* ===== LAYOUT ===== */
+  .container {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 28px 16px 60px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .page-view { display: none; }
+  .page-view.active {
+    display: block;
+    animation: fadeUp 0.3s ease forwards;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== HEADINGS ===== */
+  .page-title {
+    font-size: 1.6em;
+    font-weight: 900;
+    color: var(--text);
+    text-align: center;
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+  }
+  .page-subtitle {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85em;
+    margin-bottom: 24px;
+  }
+
+  /* ===== CARDS ===== */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+  }
+
+  .card-label {
+    font-size: 0.7em;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--primary);
+    margin-bottom: 12px;
+  }
+
+  /* ===== FORM ELEMENTS ===== */
+  label.field-label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.88em;
+    color: var(--muted);
+    margin-bottom: 6px;
+    letter-spacing: 0.02em;
+  }
+  select, input[type="number"], input[type="text"], textarea {
+    width: 100%;
+    padding: 11px 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--text);
+    font-family: var(--font-main);
+    font-size: 0.95em;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    appearance: none;
+  }
+  select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238d88ab' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+  select:focus, input:focus, textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-glow);
+  }
+  select option { background: var(--surface2); }
+
+  .form-group { margin-bottom: 14px; }
+
+  .radio-row { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 4px; }
+  .radio-row label {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 0.9em; color: var(--text); cursor: pointer; font-weight: 400;
+  }
+  .radio-row input[type="radio"] { accent-color: var(--primary); width: 15px; height: 15px; }
+
+  .note {
+    font-size: 0.78em;
+    color: var(--muted);
+    font-style: italic;
+    margin-top: 6px;
+    padding: 8px 10px;
+    background: rgba(163,116,247,0.07);
+    border-left: 2px solid var(--primary);
+    border-radius: 4px;
+  }
+
+  /* ===== BUTTONS ===== */
+  .btn-primary {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95em;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    font-family: var(--font-main);
+    box-shadow: 0 4px 15px rgba(163,116,247,0.3);
+  }
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(163,116,247,0.45);
+  }
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-secondary {
+    padding: 10px 18px;
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    font-size: 0.85em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+    font-family: var(--font-main);
+  }
+  .btn-secondary:hover { background: var(--border); border-color: var(--primary); }
+
+  /* ===== RESULT BOX ===== */
+  .result-box {
+    display: none;
+    margin-top: 16px;
+    padding: 20px;
+    border-radius: var(--radius);
+    text-align: center;
+    font-size: 1.15em;
+    font-weight: 700;
+    animation: fadeUp 0.3s ease;
+  }
+  .result-success {
+    background: var(--primary-glow);
+    border: 2px solid var(--primary);
+    color: var(--text);
+  }
+  .result-error {
+    background: rgba(244,116,116,0.1);
+    border: 2px solid var(--red);
+    color: var(--red);
+  }
+
+  /* ===== CODE CHIPS ===== */
+  .code-chip {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 1.4em;
+    font-weight: 600;
+    color: var(--primary);
+    background: var(--primary-glow);
+    padding: 4px 12px;
+    border-radius: 6px;
+    margin: 4px 3px;
+    border: 1px solid rgba(163,116,247,0.3);
+  }
+  .code-chip.gold { color: var(--gold); background: rgba(232,197,71,0.1); border-color: rgba(232,197,71,0.3); }
+
+  /* ===== SECTION DIVIDER ===== */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 18px 0;
+  }
+
+  /* ===== MODIFIER CARDS ===== */
+  .mod-search-box {
+    position: relative;
+    margin-bottom: 16px;
+  }
+  .mod-search-box input { padding-left: 38px; }
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 1em;
+  }
+
+  .mod-filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .filter-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.78em;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: var(--font-main);
+  }
+  .filter-btn.active, .filter-btn:hover { background: var(--primary-glow); border-color: var(--primary); color: var(--primary); }
+
+  .mod-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--primary);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    transition: border-color 0.2s;
+  }
+  .mod-card:hover { border-left-color: var(--teal); }
+  .mod-card.hidden { display: none; }
+  .mod-header { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+  .mod-num {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 1.1em;
+    color: var(--primary);
+    min-width: 42px;
+  }
+  .mod-title { font-weight: 600; font-size: 0.92em; color: var(--text); }
+  .mod-badge {
+    margin-left: auto;
+    font-size: 0.7em;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: var(--surface2);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .mod-badge.em { color: #a374f7; border-color: rgba(163,116,247,0.4); background: var(--primary-glow); }
+  .mod-badge.surg { color: var(--teal); border-color: rgba(61,214,200,0.4); background: rgba(61,214,200,0.08); }
+  .mod-badge.cms { color: var(--gold); border-color: rgba(232,197,71,0.4); background: rgba(232,197,71,0.08); }
+  .mod-badge.component { color: #f47474; border-color: rgba(244,116,116,0.4); background: rgba(244,116,116,0.08); }
+  .mod-desc { font-size: 0.86em; color: var(--muted); line-height: 1.5; }
+  .mod-tip {
+    font-size: 0.78em;
+    color: var(--gold);
+    margin-top: 5px;
+    padding: 5px 8px;
+    background: rgba(232,197,71,0.07);
+    border-radius: 4px;
+    border-left: 2px solid var(--gold);
+  }
+
+  /* ===== SPECIALTY CPT ===== */
+  .specialty-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 0;
+  }
+  .spec-tab {
+    padding: 10px 18px;
+    font-size: 0.85em;
+    font-weight: 700;
+    cursor: pointer;
+    border-radius: 7px 7px 0 0;
+    transition: all 0.2s;
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid transparent;
+    border-bottom: none;
+    font-family: var(--font-main);
+    position: relative;
+    bottom: -2px;
+  }
+  .spec-tab:hover { color: var(--text); background: var(--surface2); }
+  .spec-tab.active { color: var(--primary); background: var(--surface); border-color: var(--border); border-bottom-color: var(--surface); }
+
+  .specialty-panel { display: none; }
+  .specialty-panel.active { display: block; animation: fadeUp 0.25s ease; }
+
+  .cpt-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.86em;
+  }
+  .cpt-table th {
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 0.72em;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 2px solid var(--border);
+  }
+  .cpt-table td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    color: var(--text);
+  }
+  .cpt-table tr:last-child td { border-bottom: none; }
+  .cpt-table tr:hover td { background: rgba(163,116,247,0.04); }
+  .cpt-code {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 1.0em;
+    color: var(--primary);
+    white-space: nowrap;
+  }
+  .cpt-desc { line-height: 1.4; }
+  .cpt-flag {
+    display: inline-block;
+    font-size: 0.7em;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: rgba(232,197,71,0.1);
+    color: var(--gold);
+    border: 1px solid rgba(232,197,71,0.3);
+    margin-left: 5px;
+    white-space: nowrap;
+  }
+  .cpt-flag.teal { background: rgba(61,214,200,0.08); color: var(--teal); border-color: rgba(61,214,200,0.3); }
+
+  /* ===== POA ===== */
+  .poa-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .poa-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    border-top: 3px solid var(--primary);
+  }
+  .poa-card.n { border-top-color: var(--red); }
+  .poa-card.w { border-top-color: var(--gold); }
+  .poa-card.u { border-top-color: var(--muted); }
+  .poa-card.exempt { border-top-color: var(--teal); grid-column: 1 / -1; }
+  .poa-indicator {
+    font-family: var(--font-mono);
+    font-size: 2em;
+    font-weight: 700;
+    color: var(--primary);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .poa-card.n .poa-indicator { color: var(--red); }
+  .poa-card.w .poa-indicator { color: var(--gold); }
+  .poa-card.u .poa-indicator { color: var(--muted); }
+  .poa-card.exempt .poa-indicator { color: var(--teal); }
+  .poa-name { font-weight: 700; font-size: 0.9em; color: var(--text); margin-bottom: 6px; }
+  .poa-desc { font-size: 0.8em; color: var(--muted); line-height: 1.5; }
+  .poa-example { font-size: 0.78em; color: var(--primary); margin-top: 8px; font-style: italic; background: var(--primary-glow); padding: 6px 8px; border-radius: 5px; }
+  .poa-card.n .poa-example { color: var(--red); background: rgba(244,116,116,0.08); }
+  .poa-card.w .poa-example { color: var(--gold); background: rgba(232,197,71,0.07); }
+  .poa-card.exempt .poa-example { color: var(--teal); background: rgba(61,214,200,0.07); }
+
+  /* ===== TWO MIDNIGHT RULE ===== */
+  .flowchart { margin: 0 auto; }
+  .flow-node {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-bottom: 6px;
+    font-size: 0.9em;
+    font-weight: 600;
+    text-align: center;
+    position: relative;
+  }
+  .flow-node.decision {
+    background: var(--surface2);
+    border-color: var(--primary);
+    border-style: dashed;
+    color: var(--primary);
+  }
+  .flow-node.inpatient {
+    background: rgba(163,116,247,0.12);
+    border-color: var(--primary);
+    color: var(--text);
+    border-style: solid;
+  }
+  .flow-node.observation {
+    background: rgba(61,214,200,0.08);
+    border-color: var(--teal);
+    color: var(--text);
+  }
+  .flow-node.outpatient {
+    background: rgba(232,197,71,0.08);
+    border-color: var(--gold);
+    color: var(--text);
+  }
+  .flow-arrow {
+    text-align: center;
+    color: var(--muted);
+    font-size: 1.3em;
+    line-height: 1;
+    margin: 2px 0;
+  }
+  .flow-branches {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 6px 0;
+  }
+  .branch-label {
+    text-align: center;
+    font-size: 0.75em;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+  .flow-sub {
+    font-size: 0.78em;
+    color: var(--muted);
+    font-weight: 400;
+    margin-top: 4px;
+  }
+
+  /* ===== FLASHCARDS ===== */
+  .fc-container {
+    perspective: 1000px;
+    height: 280px;
+    cursor: pointer;
+    margin-bottom: 16px;
+  }
+  .fc-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d;
+  }
+  .fc-container.flipped .fc-inner { transform: rotateY(180deg); }
+  .fc-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 28px 24px;
+    text-align: center;
+    box-shadow: var(--shadow);
+  }
+  .fc-front {
+    background: var(--surface);
+    border: 1px solid var(--border);
+  }
+  .fc-back {
+    background: linear-gradient(145deg, var(--primary-dark), #5c3ba0);
+    border: 1px solid rgba(163,116,247,0.4);
+    transform: rotateY(180deg);
+  }
+  .fc-label {
+    font-size: 0.65em;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+  .fc-back .fc-label { color: rgba(255,255,255,0.5); }
+  .fc-text {
+    font-size: 0.97em;
+    line-height: 1.55;
+    color: var(--text);
+  }
+  .fc-back .fc-text { color: white; }
+  .fc-category {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    font-size: 0.68em;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: var(--primary-glow);
+    color: var(--primary);
+  }
+  .fc-back .fc-category { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.8); }
+  .fc-hint { font-size: 0.72em; color: var(--muted); margin-top: 16px; font-style: italic; }
+  .fc-back .fc-hint { color: rgba(255,255,255,0.45); }
+
+  .fc-controls { display: flex; gap: 10px; margin-bottom: 12px; }
+  .fc-btn {
+    flex: 1;
+    padding: 12px;
+    font-size: 0.85em;
+    font-weight: 700;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: var(--font-main);
+  }
+  .fc-btn:hover { background: var(--primary-glow); border-color: var(--primary); color: var(--primary); }
+
+  .fc-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.82em;
+    color: var(--muted);
+  }
+  .fc-progress {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .fc-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-dark), var(--primary));
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  .fc-filter-bar { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 14px; }
+  .fc-filter { 
+    padding: 5px 12px;
+    border-radius: 16px;
+    font-size: 0.75em;
+    font-weight: 700;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: var(--font-main);
+  }
+  .fc-filter.active { background: var(--primary-glow); border-color: var(--primary); color: var(--primary); }
+
+  /* ===== QUERY GENERATOR ===== */
+  .query-output {
+    display: none;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-top: 16px;
+    font-size: 0.88em;
+    line-height: 1.7;
+    color: var(--text);
+    white-space: pre-wrap;
+    font-family: var(--font-mono);
+    position: relative;
+  }
+  .copy-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 5px 12px;
+    background: var(--primary-glow);
+    border: 1px solid rgba(163,116,247,0.4);
+    color: var(--primary);
+    border-radius: 6px;
+    font-size: 0.8em;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: var(--font-main);
+    transition: all 0.2s;
+  }
+  .copy-btn:hover { background: var(--primary); color: white; }
+
+  /* ===== MISC ===== */
+  .badge-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .stat-badge {
+    font-size: 0.75em;
+    padding: 4px 10px;
+    border-radius: 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  textarea { resize: vertical; min-height: 80px; }
+
+  @media (max-width: 520px) {
+    .poa-grid { grid-template-columns: 1fr; }
+    .poa-card.exempt { grid-column: 1; }
+    .flow-branches { grid-template-columns: 1fr; }
+    .navbar a { padding: 10px 9px; font-size: 0.76em; }
+    .nav-brand { display: none; }
+  }
+</style>
 </head>
 <body>
 
-    <div class="navbar">
-        <a class="nav-link active" onclick="showPage(event, 'inpatient-tool')">Inpatient Calc</a>
-        <a class="nav-link" onclick="showPage(event, 'ed-tool')">ED Leveling</a>
-        <a class="nav-link" onclick="showPage(event, 'modifier-tool')">Modifiers</a>
-        <a class="nav-link" onclick="showPage(event, 'cic-tool')">CIC Flashcards</a>
-        <a class="nav-link ext-link" href="https://crmills81.github.io/MCW_Coder_Hub/" target="_blank">MCW Hub &#8599;</a>
+<nav class="navbar">
+  <span class="nav-brand">MCW // PROFEE</span>
+  <a class="nav-link active" onclick="showPage(event,'pg-inpatient')">Inpatient</a>
+  <a class="nav-link" onclick="showPage(event,'pg-ed')">ED</a>
+  <a class="nav-link" onclick="showPage(event,'pg-modifiers')">Modifiers</a>
+  <a class="nav-link" onclick="showPage(event,'pg-specialty')">Specialty CPT</a>
+  <a class="nav-link" onclick="showPage(event,'pg-poa')">POA</a>
+  <a class="nav-link" onclick="showPage(event,'pg-2mid')">2-Midnight</a>
+  <a class="nav-link" onclick="showPage(event,'pg-query')">Query Gen</a>
+  <a class="nav-link" onclick="showPage(event,'pg-flash')">Flashcards</a>
+  <a class="nav-link ext-link" href="https://crmills81.github.io/MCW_Coder_Hub/" target="_blank">MCW Hub ↗</a>
+</nav>
+
+<div class="container">
+
+<!-- ==================== INPATIENT ==================== -->
+<div id="pg-inpatient" class="page-view active">
+  <h1 class="page-title">Inpatient Profee Assistant</h1>
+  <p class="page-subtitle">Calculate CPT codes for inpatient E/M services by MDM or time</p>
+
+  <div class="card">
+    <div class="card-label">Encounter Configuration</div>
+    <div class="form-group">
+      <label class="field-label">Encounter Type</label>
+      <select id="encounterType" onchange="updateUI()">
+        <option value="initial">Initial Hospital Care (99221–99223)</option>
+        <option value="subsequent">Subsequent Hospital Care (99231–99233)</option>
+        <option value="sameDay">Same-Day Admit &amp; Discharge (99234–99236)</option>
+        <option value="discharge">Hospital Discharge Day Mgmt (99238–99239)</option>
+      </select>
+      <div id="encounterNote" class="note" style="display:none;"></div>
+    </div>
+    <div class="form-group" id="payerGroup">
+      <label class="field-label">Payer Type (affects prolonged services)</label>
+      <div class="radio-row">
+        <label><input type="radio" name="payer" value="ama" checked> Commercial / AMA</label>
+        <label><input type="radio" name="payer" value="cms"> Medicare / CMS</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Coding Method</div>
+    <div class="form-group">
+      <div class="radio-row">
+        <label><input type="radio" name="method" value="mdm" id="radioMdm" checked onchange="toggleMethod()"> Medical Decision Making (MDM)</label>
+        <label><input type="radio" name="method" value="time" id="radioTime" onchange="toggleMethod()"> Total Time</label>
+      </div>
+    </div>
+    <div id="mdmSection" class="form-group">
+      <label class="field-label">MDM Level</label>
+      <select id="mdmLevel">
+        <option value="low">Straightforward or Low</option>
+        <option value="moderate">Moderate</option>
+        <option value="high">High</option>
+      </select>
+    </div>
+    <div id="timeSection" class="form-group" style="display:none;">
+      <label class="field-label">Total Time on Date of Encounter (minutes)</label>
+      <input type="number" id="timeMinutes" placeholder="e.g., 85" min="0">
+      <div class="note">Include all time personally spent by the billing provider on the date of service — review of records, care coordination, etc.</div>
+    </div>
+  </div>
+
+  <button class="btn-primary" onclick="calculateCPT()">Calculate Inpatient CPT →</button>
+  <div id="result" class="result-box"></div>
+</div>
+
+<!-- ==================== ED ==================== -->
+<div id="pg-ed" class="page-view">
+  <h1 class="page-title">Emergency Department Leveling</h1>
+  <p class="page-subtitle">ED codes are leveled exclusively on MDM — time does not apply</p>
+
+  <div class="card">
+    <div class="note" style="margin-bottom:14px;">Per AMA E/M guidelines, time is not a descriptive component for ED levels. All levels are assigned based on Medical Decision Making only.</div>
+    <div class="form-group">
+      <label class="field-label">Medical Decision Making (MDM) Level</label>
+      <select id="edMdmLevel">
+        <option value="none">May not require presence of physician / QHP</option>
+        <option value="straightforward">Straightforward</option>
+        <option value="low">Low</option>
+        <option value="moderate">Moderate</option>
+        <option value="high">High</option>
+      </select>
+    </div>
+  </div>
+
+  <button class="btn-primary" onclick="calculateED()">Calculate ED Code →</button>
+  <div id="edResult" class="result-box"></div>
+
+  <div class="card" style="margin-top:16px;">
+    <div class="card-label">ED MDM Quick Reference</div>
+    <table class="cpt-table">
+      <thead><tr><th>CODE</th><th>MDM LEVEL</th><th>TYPICAL SCENARIO</th></tr></thead>
+      <tbody>
+        <tr><td class="cpt-code">99281</td><td>Minimal / None</td><td>No physician presence required; self-limited complaint</td></tr>
+        <tr><td class="cpt-code">99282</td><td>Straightforward</td><td>Minor problem, 1 self-limited dx, minimal risk</td></tr>
+        <tr><td class="cpt-code">99283</td><td>Low</td><td>1–2 stable chronic problems, or new problem with minor risk</td></tr>
+        <tr><td class="cpt-code">99284</td><td>Moderate</td><td>New problem requiring additional workup, prescription management</td></tr>
+        <tr><td class="cpt-code">99285</td><td>High</td><td>High-risk decision, possible threat to life or function</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ==================== MODIFIERS ==================== -->
+<div id="pg-modifiers" class="page-view">
+  <h1 class="page-title">Modifier Quick Reference</h1>
+  <p class="page-subtitle">35 modifiers with usage notes — filter by category or keyword</p>
+
+  <div class="mod-search-box">
+    <span class="search-icon">⌕</span>
+    <input type="text" id="modSearchInput" onkeyup="filterModifiers()" placeholder="Search by number or keyword…">
+  </div>
+
+  <div class="mod-filter-bar">
+    <button class="filter-btn active" onclick="filterByCategory(this,'all')">All</button>
+    <button class="filter-btn" onclick="filterByCategory(this,'em')">E/M</button>
+    <button class="filter-btn" onclick="filterByCategory(this,'surg')">Surgical</button>
+    <button class="filter-btn" onclick="filterByCategory(this,'cms')">CMS / X-Mod</button>
+    <button class="filter-btn" onclick="filterByCategory(this,'component')">Component</button>
+  </div>
+
+  <div id="modifierList">
+    <!-- E/M Modifiers -->
+    <div class="mod-card" data-cat="em"><div class="mod-header"><span class="mod-num">25</span><span class="mod-title">Significant, Separately Identifiable E/M — Same Day</span><span class="mod-badge em">E/M</span></div><p class="mod-desc">E/M provided by the same physician on the same day as a procedure or other service. The E/M must be above and beyond the pre/post-operative work.</p><div class="mod-tip">⚑ Requires separate documentation of the E/M beyond the procedure note. Frequently audited.</div></div>
+    <div class="mod-card" data-cat="em"><div class="mod-header"><span class="mod-num">24</span><span class="mod-title">Unrelated E/M During Postoperative Period</span><span class="mod-badge em">E/M</span></div><p class="mod-desc">E/M by the same physician during a postoperative period for a problem unrelated to the original surgery. Requires documentation clearly showing the unrelated nature.</p><div class="mod-tip">⚑ Must be coded with a diagnosis code unrelated to the surgical procedure.</div></div>
+    <div class="mod-card" data-cat="em"><div class="mod-header"><span class="mod-num">57</span><span class="mod-title">Decision for Surgery</span><span class="mod-badge em">E/M</span></div><p class="mod-desc">An E/M service that resulted in the initial decision to perform surgery. Append to E/M when the surgery is a major procedure (90-day global period) and the decision is made the day before or day of surgery.</p><div class="mod-tip">⚑ Use with major surgery (global 090). For minor surgery (global 000/010), use modifier 25 instead.</div></div>
+    <div class="mod-card" data-cat="em"><div class="mod-header"><span class="mod-num">32</span><span class="mod-title">Mandated Services</span><span class="mod-badge em">E/M</span></div><p class="mod-desc">Services mandated by a regulatory or government agency, third party payer, or referring physician.</p></div>
+
+    <!-- Surgical Modifiers -->
+    <div class="mod-card" data-cat="surg"><div class="mod-header"><span class="mod-num">22</span><span class="mod-title">Increased Procedural Services</span><span class="mod-badge surg">Surgical</span></div><p class="mod-desc">The work required to provide the service was substantially greater than typically required. Must be accompanied by documentation explaining the increased work — increased intensity, time, technical difficulty, or severity of condition.</p><div class="mod-tip">⚑ Typically results in a 15–30% increase in reimbursement. Requires a cover letter or documentation attachment.</div></div>
+    <div class="mod-card" data-cat="surg"><div class="mod-header"><span class="mod-num">47</span><span class="mod-title">Anesthesia by Surgeon</span><span class="mod-badge surg">Surgical</span></div><p class="mod-desc">Regional or general anesthesia administered by the operating surgeon. Do not use for local anesthesia.</p></div>
+    <div class="mod-card" data-cat="surg"><div class="mod-header"><span class="mod-num">50</span><span class="mod-title">Bilateral Procedure</span><span class="mod-badge surg">Surgical</span></div><p class="mod-desc">Unless otherwise identified in the listings, bilateral procedures performed at the same session should be identified by adding modifier 50.</p><div class="mod-tip">⚑ Payer rules vary widely. CMS typically pays 150% for bilateral procedures. Confirm payer policy before appending.</div></div>
+    <div class="mod-card" data-cat="surg"><div class="mod-header"><span class="mod-num">51</span><span class="mod-title">Multiple Procedures</span><span class="mod-badge surg">Surgical</span></div><p class="mod-desc">When multiple procedures are performed at the same session by the same provider, the primary procedure should be reported first. Subsequent procedures are reported with modifier 51. CMS has a list of modifier 51 exempt codes.</p></div>
+    <div class="mod-card" data-cat="surg"><div class="mod-header"><span class="mod-num">52</span><span class="mod-title">Reduced Services</span><span class="mod-badge surg">Surgical</span></div><p class="mod-desc">Under certain circumstances a service is partially reduced or eliminated at the physician's discretion. Does not apply to professional components.</p></div>
+    <div class="mod-card" data-cat="surg"><div class="mod-header"><span class="mod-num">53</span><span class="mod-title">Discontinued Procedure</span><span class="mod-badge surg">Surgical</span></div><p class="mod-desc">Physician elected to terminate a surgical or diagnostic procedure due to extenuating circumstances or threat to the patient's well-being after the patient was prepared but before general anesthesia (see 73/74 for facility).</p></div>
+    <div class="mod-card" data-cat="surg"><div class="mod-header"><span class="mod-num">54</span><span class="mod-title">Surgical Care Only</span><span class="mod-badge surg">Surgical</span></div><p class="mod-desc">When one physician performs a surgical procedure and another provides preoperative and/or postoperative care.</p></div>
+    <div class="mod-card" data-cat="surg"><div class="mod-header"><span class="mod-num">55</span><span class="mod-title">Postoperative Management Only</span><span class="mod-badge surg">Surgical</span></div><p class="mod-desc">When one physician performed the postoperative management and another physician performed the surgical procedure.</p></div>
+    <div class="mod-card" data-cat="surg"><div class="mod-header"><span class="mod-num">56</span><span class="mod-title">Preoperative Management Only</span><span class="mod-badge surg">Surgical</span></div><p class="mod-desc">When one physician performed the preoperative care and evaluation and another performed the surgical procedure.</p></div>
+    <div class="mod-card" data-cat="surg"><div class="mod-header"><span class="mod-num">58</span><span class="mod-title">Staged / Related Procedure During Postop Period</span><span class="mod-badge surg">Surgical</span></div><p class="mod-desc">The surgeon performing a staged, related, or similar procedure during the postoperative period of a previous procedure. Not used for unplanned return (see 78).</p></div>
+    <div class="mod-card" data-cat="surg"><div class="mod-header"><span class="mod-num">59</span><span class="mod-title">Distinct Procedural Service</span><span class="mod-badge surg">Surgical</span></div><p class="mod-desc">A procedure or service distinct or independent from other non-E/M services performed on the same day. Use only when a more specific modifier (XE, XS, XP, XU) is not available.</p><div class="mod-tip">⚑ CMS prefers X-modifiers over 59. Use 59 when no X-modifier is applicable.</div></div>
+    <div class="mod-card" data-cat="surg"><div class="mod-header"><span class="mod-num">62</span><span class="mod-title">Two Surgeons</span><span class="mod-badge surg">Surgical</span></div><p class="mod-desc">When two surgeons work together as primary surgeons performing distinct parts of a procedure, each surgeon reports the procedure with modifier 62.</p><div class="mod-tip">⚑ Each surgeon must document their distinct role. Different from modifier 66 (surgical team).</div></div>
+    <div class="mod-card" data-cat="surg"><div class="mod-header"><span class="mod-num">63</span><span class="mod-title">Procedure on Infant &lt;4 kg</span><span class="mod-badge surg">Surgical</span></div><p class="mod-desc">Procedures performed on neonates and infants up to a present body weight of 4 kg. Indicates the additional complexity of procedures in this patient population.</p></div>
+    <div class="mod-card" data-cat="surg"><div class="mod-header"><span class="mod-num">66</span><span class="mod-title">Surgical Team</span><span class="mod-badge surg">Surgical</span></div><p class="mod-desc">Highly complex procedures requiring the concomitant services of several physicians, each with specific skills. Only for procedures where team surgery is specified in payer guidelines.</p></div>
+    <div class="mod-card" data-cat="surg"><div class="mod-header"><span class="mod-num">73</span><span class="mod-title">Discontinued ASC Procedure (Before Anesthesia)</span><span class="mod-badge surg">Surgical</span></div><p class="mod-desc">Outpatient hospital/ASC procedure cancelled after patient prepared and taken to room but before anesthesia administered. Facility use.</p></div>
+    <div class="mod-card" data-cat="surg"><div class="mod-header"><span class="mod-num">74</span><span class="mod-title">Discontinued ASC Procedure (After Anesthesia)</span><span class="mod-badge surg">Surgical</span></div><p class="mod-desc">Outpatient hospital/ASC procedure cancelled after administration of anesthesia or after procedure was started. Facility use.</p></div>
+    <div class="mod-card" data-cat="surg"><div class="mod-header"><span class="mod-num">76</span><span class="mod-title">Repeat Procedure by Same Physician</span><span class="mod-badge surg">Surgical</span></div><p class="mod-desc">Repeat procedure performed by the same physician or other QHP subsequent to the original procedure.</p></div>
+    <div class="mod-card" data-cat="surg"><div class="mod-header"><span class="mod-num">77</span><span class="mod-title">Repeat Procedure by Another Physician</span><span class="mod-badge surg">Surgical</span></div><p class="mod-desc">Repeat procedure performed by a different physician or other QHP.</p></div>
+    <div class="mod-card" data-cat="surg"><div class="mod-header"><span class="mod-num">78</span><span class="mod-title">Unplanned Return to OR (Related)</span><span class="mod-badge surg">Surgical</span></div><p class="mod-desc">Unplanned return to the operating room by the same physician following initial procedure for a related procedure during the postoperative period.</p><div class="mod-tip">⚑ Only the intraoperative portion of the subsequent surgery is payable when 78 is appended.</div></div>
+    <div class="mod-card" data-cat="surg"><div class="mod-header"><span class="mod-num">79</span><span class="mod-title">Unrelated Procedure During Postop Period</span><span class="mod-badge surg">Surgical</span></div><p class="mod-desc">Procedure performed by same surgeon during the postoperative period for an unrelated condition. A new postoperative period begins with the subsequent procedure.</p></div>
+    <div class="mod-card" data-cat="surg"><div class="mod-header"><span class="mod-num">80</span><span class="mod-title">Assistant Surgeon</span><span class="mod-badge surg">Surgical</span></div><p class="mod-desc">Surgical assistant services may be identified by adding modifier 80 to the usual procedure code.</p></div>
+    <div class="mod-card" data-cat="surg"><div class="mod-header"><span class="mod-num">81</span><span class="mod-title">Minimum Assistant Surgeon</span><span class="mod-badge surg">Surgical</span></div><p class="mod-desc">Minimum surgical assistant services are identified by adding modifier 81 to the usual procedure code.</p></div>
+    <div class="mod-card" data-cat="surg"><div class="mod-header"><span class="mod-num">82</span><span class="mod-title">Assistant Surgeon (Resident Unavailable)</span><span class="mod-badge surg">Surgical</span></div><p class="mod-desc">When a qualified resident is unavailable, a second physician may serve as assistant. Used only in teaching hospitals. Submit documentation of unavailability.</p></div>
+
+    <!-- CMS / X-Modifiers -->
+    <div class="mod-card" data-cat="cms"><div class="mod-header"><span class="mod-num">GC</span><span class="mod-title">Service Performed in Part by Resident</span><span class="mod-badge cms">CMS</span></div><p class="mod-desc">Service performed in part by a resident under the direction of a teaching physician. The teaching physician must be present during key portions of the service.</p><div class="mod-tip">⚑ Critical for MCW as a teaching institution. Teaching physician must document their participation.</div></div>
+    <div class="mod-card" data-cat="cms"><div class="mod-header"><span class="mod-num">Q6</span><span class="mod-title">Locum Tenens Physician</span><span class="mod-badge cms">CMS</span></div><p class="mod-desc">Service furnished by a locum tenens physician. The regular physician must arrange and pay the locum tenens.</p></div>
+    <div class="mod-card" data-cat="cms"><div class="mod-header"><span class="mod-num">XE</span><span class="mod-title">Separate Encounter</span><span class="mod-badge cms">CMS X-Mod</span></div><p class="mod-desc">A service that is distinct because it occurred during a separate encounter from other services billed on the same date.</p><div class="mod-tip">⚑ Preferred CMS alternative to modifier 59 when the distinction is a separate encounter.</div></div>
+    <div class="mod-card" data-cat="cms"><div class="mod-header"><span class="mod-num">XS</span><span class="mod-title">Separate Structure</span><span class="mod-badge cms">CMS X-Mod</span></div><p class="mod-desc">A service that is distinct because it was performed on a separate organ/structure. Common in bilateral procedures or multi-site interventions.</p></div>
+    <div class="mod-card" data-cat="cms"><div class="mod-header"><span class="mod-num">XP</span><span class="mod-title">Separate Practitioner</span><span class="mod-badge cms">CMS X-Mod</span></div><p class="mod-desc">A service that is distinct because it was performed by a different practitioner than the one who performed the other service on the same date.</p></div>
+    <div class="mod-card" data-cat="cms"><div class="mod-header"><span class="mod-num">XU</span><span class="mod-title">Unusual Non-Overlapping Service</span><span class="mod-badge cms">CMS X-Mod</span></div><p class="mod-desc">A service that is distinct because it does not overlap the usual components of the main service. Narrowest of the X-modifiers.</p></div>
+
+    <!-- Component -->
+    <div class="mod-card" data-cat="component"><div class="mod-header"><span class="mod-num">26</span><span class="mod-title">Professional Component</span><span class="mod-badge component">Component</span></div><p class="mod-desc">Appended when reporting only the physician's interpretation and written report. The technical component (equipment, personnel) is billed separately.</p></div>
+    <div class="mod-card" data-cat="component"><div class="mod-header"><span class="mod-num">TC</span><span class="mod-title">Technical Component</span><span class="mod-badge component">Component</span></div><p class="mod-desc">Appended to report only the technical component of a procedure (equipment, supplies, non-physician staff). Used by facilities/hospitals.</p></div>
+  </div>
+</div>
+
+<!-- ==================== SPECIALTY CPT ==================== -->
+<div id="pg-specialty" class="page-view">
+  <h1 class="page-title">Specialty CPT Reference</h1>
+  <p class="page-subtitle">Common inpatient codes for Urology, Ophthalmology &amp; Otolaryngology</p>
+
+  <div class="card" style="padding-bottom:0; padding-top:16px;">
+    <div class="specialty-tabs">
+      <button class="spec-tab active" onclick="showSpecialty(this,'uro')">🫘 Urology</button>
+      <button class="spec-tab" onclick="showSpecialty(this,'oph')">👁 Ophthalmology</button>
+      <button class="spec-tab" onclick="showSpecialty(this,'oto')">👂 Otolaryngology</button>
     </div>
 
-    <div class="container">
-
-        <div id="inpatient-tool" class="page-view active">
-            <h2>Inpatient Profee Assistant</h2>
-            <div class="section">
-                <div class="form-group">
-                    <label for="encounterType">Encounter Type:</label>
-                    <select id="encounterType" onchange="updateUI()">
-                        <option value="initial">Initial Hospital Care (99221-99223)</option>
-                        <option value="subsequent">Subsequent Hospital Care (99231-99233)</option>
-                        <option value="sameDay">Same-Day Admit & Discharge (99234-99236)</option>
-                        <option value="discharge">Hospital Discharge Day Mgmt (99238-99239)</option>
-                    </select>
-                    <div id="encounterNote" class="note"></div>
-                </div>
-                <div class="form-group" id="payerGroup">
-                    <label>Payer Type (Affects Prolonged Services):</label>
-                    <div class="radio-group">
-                        <label><input type="radio" name="payer" value="ama" checked> Commercial / AMA</label>
-                        <label><input type="radio" name="payer" value="cms"> Medicare / CMS</label>
-                    </div>
-                </div>
-            </div>
-
-            <div class="section">
-                <div class="form-group">
-                    <label>Select Coding Method:</label>
-                    <div class="radio-group">
-                        <label><input type="radio" name="method" value="mdm" id="radioMdm" checked onchange="toggleMethod()"> Medical Decision Making (MDM)</label>
-                        <label><input type="radio" name="method" value="time" id="radioTime" onchange="toggleMethod()"> Total Time</label>
-                    </div>
-                </div>
-
-                <div id="mdmSection" class="form-group">
-                    <label for="mdmLevel">MDM Level:</label>
-                    <select id="mdmLevel">
-                        <option value="low">Straightforward or Low</option>
-                        <option value="moderate">Moderate</option>
-                        <option value="high">High</option>
-                    </select>
-                </div>
-
-                <div id="timeSection" class="form-group" style="display:none;">
-                    <label for="timeMinutes">Total Time on Date of Encounter (Minutes):</label>
-                    <input type="number" id="timeMinutes" placeholder="e.g., 85" min="0">
-                </div>
-            </div>
-
-            <button onclick="calculateCPT()">Calculate Inpatient CPT</button>
-            <div id="result" class="result-box"></div>
-        </div>
-
-        <div id="ed-tool" class="page-view">
-            <h2>Emergency Dept Leveling</h2>
-            <div class="section">
-                <p class="note" style="margin-bottom: 15px;">*Per AMA E/M guidelines, time is not a descriptive component for Emergency Department levels. Codes are leveled solely on MDM.</p>
-                <div class="form-group">
-                    <label for="edMdmLevel">Medical Decision Making (MDM) Level:</label>
-                    <select id="edMdmLevel">
-                        <option value="none">May not require presence of physician/QHP</option>
-                        <option value="straightforward">Straightforward</option>
-                        <option value="low">Low</option>
-                        <option value="moderate">Moderate</option>
-                        <option value="high">High</option>
-                    </select>
-                </div>
-            </div>
-            <button onclick="calculateED()">Calculate ED Code</button>
-            <div id="edResult" class="result-box"></div>
-        </div>
-
-        <div id="modifier-tool" class="page-view">
-            <h2>Modifier Quick Reference</h2>
-            <div class="mod-search">
-                <input type="text" id="modSearchInput" onkeyup="filterModifiers()" placeholder="Search by number or keyword (e.g., '25' or 'unrelated')...">
-            </div>
-            <div id="modifierList">
-                <div class="mod-card"><h3>25 <span class="mod-badge">E/M</span></h3><p>Significant, Separately Identifiable Evaluation and Management Service by the Same Physician on the Same Day of the Procedure or Other Service.</p></div>
-                <div class="mod-card"><h3>24 <span class="mod-badge">E/M</span></h3><p>Unrelated Evaluation and Management Service by the Same Physician During a Postoperative Period.</p></div>
-                <div class="mod-card"><h3>59 <span class="mod-badge">Procedure</span></h3><p>Distinct Procedural Service. Indicates that a procedure or service was distinct or independent from other non-E/M services performed on the same day.</p></div>
-                <div class="mod-card"><h3>XE <span class="mod-badge">CMS / X-Mod</span></h3><p>Separate Encounter. A service that is distinct because it occurred during a separate encounter.</p></div>
-                <div class="mod-card"><h3>XS <span class="mod-badge">CMS / X-Mod</span></h3><p>Separate Structure. A service that is distinct because it was performed on a separate organ/structure.</p></div>
-                <div class="mod-card"><h3>XP <span class="mod-badge">CMS / X-Mod</span></h3><p>Separate Practitioner. A service that is distinct because it was performed by a different practitioner.</p></div>
-                <div class="mod-card"><h3>XU <span class="mod-badge">CMS / X-Mod</span></h3><p>Unusual Non-Overlapping Service. A service that is distinct because it does not overlap usual components of the main service.</p></div>
-                <div class="mod-card"><h3>26 <span class="mod-badge">Professional</span></h3><p>Professional Component. Used when reporting only the physician's interpretation/work.</p></div>
-            </div>
-        </div>
-
-        <div id="cic-tool" class="page-view">
-            <h2>CIC Exam Flashcards</h2>
-            
-            <div class="flashcard-container" id="flashcardContainer" onclick="flipCard()">
-                <div class="flashcard-inner">
-                    <div class="flashcard-front">
-                        <h3>Question</h3>
-                        <div class="flashcard-text" id="flashcardQuestion">Loading...</div>
-                        <div class="hint">Tap card to reveal answer</div>
-                    </div>
-                    <div class="flashcard-back">
-                        <h3>Answer</h3>
-                        <div class="flashcard-text" id="flashcardAnswer">Loading...</div>
-                        <div class="hint">Tap card to flip back</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="flashcard-controls">
-                <button class="flashcard-btn" onclick="prevCard()">&#8592; Previous</button>
-                <button class="flashcard-btn" onclick="nextCard()">Next &#8594;</button>
-            </div>
-            <div class="card-counter" id="cardCounter">Card 1 of X</div>
-        </div>
-
+    <!-- UROLOGY -->
+    <div id="spec-uro" class="specialty-panel active">
+      <table class="cpt-table">
+        <thead><tr><th>CPT</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td class="cpt-code">52000</td><td class="cpt-desc">Cystourethroscopy — diagnostic</td></tr>
+          <tr><td class="cpt-code">52204</td><td class="cpt-desc">Cystourethroscopy with biopsy(s)</td></tr>
+          <tr><td class="cpt-code">52310</td><td class="cpt-desc">Cystourethroscopy with removal of foreign body, calculus, or ureteral stent; simple</td></tr>
+          <tr><td class="cpt-code">52315</td><td class="cpt-desc">Cystourethroscopy with removal; complicated</td></tr>
+          <tr><td class="cpt-code">52332</td><td class="cpt-desc">Cystourethroscopy with insertion of indwelling ureteral stent<span class="cpt-flag">High Volume</span></td></tr>
+          <tr><td class="cpt-code">52353</td><td class="cpt-desc">Cystourethroscopy with ureteroscopy and/or pyeloscopy; with lithotripsy</td></tr>
+          <tr><td class="cpt-code">52356</td><td class="cpt-desc">Cystourethroscopy with ureteroscopy; with lithotripsy including insertion of indwelling ureteral stent</td></tr>
+          <tr><td class="cpt-code">52601</td><td class="cpt-desc">TURP, including control of postoperative bleeding, complete (vasectomy, meatotomy, cystourethroscopy included)</td></tr>
+          <tr><td class="cpt-code">52630</td><td class="cpt-desc">TURP — residual or regrowth of obstructive tissue</td></tr>
+          <tr><td class="cpt-code">52648</td><td class="cpt-desc">Laser vaporization of prostate including control of postoperative bleeding (PVP/GreenLight)</td></tr>
+          <tr><td class="cpt-code">50080</td><td class="cpt-desc">Percutaneous nephrostolithotomy (PCNL); up to 2 cm<span class="cpt-flag">Mod 50?</span></td></tr>
+          <tr><td class="cpt-code">50081</td><td class="cpt-desc">Percutaneous nephrostolithotomy (PCNL); over 2 cm</td></tr>
+          <tr><td class="cpt-code">50590</td><td class="cpt-desc">Lithotripsy, extracorporeal shock wave (ESWL)</td></tr>
+          <tr><td class="cpt-code">50230</td><td class="cpt-desc">Nephrectomy, including partial ureterectomy; radical with regional lymphadenectomy and/or vena caval thrombectomy</td></tr>
+          <tr><td class="cpt-code">50240</td><td class="cpt-desc">Nephrectomy — partial</td></tr>
+          <tr><td class="cpt-code">50543</td><td class="cpt-desc">Laparoscopic partial nephrectomy<span class="cpt-flag teal">Lap</span></td></tr>
+          <tr><td class="cpt-code">50545</td><td class="cpt-desc">Laparoscopic radical nephrectomy<span class="cpt-flag teal">Lap</span></td></tr>
+          <tr><td class="cpt-code">50547</td><td class="cpt-desc">Laparoscopic donor nephrectomy<span class="cpt-flag teal">Lap</span></td></tr>
+          <tr><td class="cpt-code">51040</td><td class="cpt-desc">Cystostomy with drainage</td></tr>
+          <tr><td class="cpt-code">51840</td><td class="cpt-desc">Anterior vesicourethropexy (Marshall-Marchetti-Krantz)</td></tr>
+          <tr><td class="cpt-code">55840</td><td class="cpt-desc">Prostatectomy, retropubic radical, with or without nerve sparing</td></tr>
+          <tr><td class="cpt-code">55866</td><td class="cpt-desc">Laparoscopic radical prostatectomy (robot-assisted included)<span class="cpt-flag teal">Lap</span></td></tr>
+          <tr><td class="cpt-code">55700</td><td class="cpt-desc">Biopsy, prostate; needle or punch, single or multiple, any approach</td></tr>
+          <tr><td class="cpt-code">54161</td><td class="cpt-desc">Circumcision, surgical excision other than clamp, device, or dorsal slit; older than 28 days</td></tr>
+        </tbody>
+      </table>
     </div>
 
-    <script>
-        // --- NAVIGATION LOGIC ---
-        function showPage(event, pageId) {
-            // Prevent navigating if it's the external link
-            if (event.target.classList.contains('ext-link')) return;
+    <!-- OPHTHALMOLOGY -->
+    <div id="spec-oph" class="specialty-panel">
+      <table class="cpt-table">
+        <thead><tr><th>CPT</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td class="cpt-code">66984</td><td class="cpt-desc">Extracapsular cataract removal with insertion of intraocular lens (IOL), one stage<span class="cpt-flag">High Volume</span></td></tr>
+          <tr><td class="cpt-code">66982</td><td class="cpt-desc">Extracapsular cataract removal — complex; requiring devices or techniques not generally used in routine cataract surgery</td></tr>
+          <tr><td class="cpt-code">66821</td><td class="cpt-desc">YAG laser surgery for secondary membranous cataract (posterior capsulotomy)</td></tr>
+          <tr><td class="cpt-code">66850</td><td class="cpt-desc">Removal of lens material; phacofragmentation technique</td></tr>
+          <tr><td class="cpt-code">67028</td><td class="cpt-desc">Intravitreal injection of a pharmacological agent<span class="cpt-flag">High Volume</span></td></tr>
+          <tr><td class="cpt-code">67036</td><td class="cpt-desc">Vitrectomy, mechanical, pars plana approach</td></tr>
+          <tr><td class="cpt-code">67041</td><td class="cpt-desc">Vitrectomy, mechanical, pars plana approach; with removal of preretinal cellular membrane (e.g., macular pucker)</td></tr>
+          <tr><td class="cpt-code">67108</td><td class="cpt-desc">Repair of retinal detachment; with vitrectomy, any method, with or without air or gas tamponade</td></tr>
+          <tr><td class="cpt-code">67110</td><td class="cpt-desc">Repair of retinal detachment; by injection of air or other gas</td></tr>
+          <tr><td class="cpt-code">65800</td><td class="cpt-desc">Paracentesis of anterior chamber of eye; with removal of aqueous</td></tr>
+          <tr><td class="cpt-code">66170</td><td class="cpt-desc">Fistulization of sclera for glaucoma; trabeculectomy ab externo</td></tr>
+          <tr><td class="cpt-code">66172</td><td class="cpt-desc">Trabeculectomy ab externo in absence of previous surgery, with scarring of conjunctiva</td></tr>
+          <tr><td class="cpt-code">66180</td><td class="cpt-desc">Aqueous shunt to extraocular reservoir (e.g., Molteno, Baerveldt, Ahmed)</td></tr>
+          <tr><td class="cpt-code">65710</td><td class="cpt-desc">Keratoplasty (corneal transplant); anterior lamellar</td></tr>
+          <tr><td class="cpt-code">65750</td><td class="cpt-desc">Keratoplasty; penetrating (except in aphakia or pseudophakia) — PKP</td></tr>
+          <tr><td class="cpt-code">65755</td><td class="cpt-desc">Keratoplasty; penetrating in aphakia</td></tr>
+          <tr><td class="cpt-code">67900</td><td class="cpt-desc">Repair of brow ptosis (supraciliary, mid-forehead, or coronal approach)</td></tr>
+          <tr><td class="cpt-code">67904</td><td class="cpt-desc">Repair of blepharoptosis; levator resection or advancement, external approach</td></tr>
+          <tr><td class="cpt-code">67911</td><td class="cpt-desc">Correction of lid retraction</td></tr>
+          <tr><td class="cpt-code">67950</td><td class="cpt-desc">Canthoplasty (reconstruction of canthus)</td></tr>
+          <tr><td class="cpt-code">68761</td><td class="cpt-desc">Closure of lacrimal punctum; by thermocauterization, ligation, or laser surgery</td></tr>
+          <tr><td class="cpt-code">68820</td><td class="cpt-desc">Dilation of lacrimal duct; with or without irrigation</td></tr>
+        </tbody>
+      </table>
+    </div>
 
-            document.querySelectorAll('.page-view').forEach(page => page.classList.remove('active'));
-            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
-            event.target.classList.add('active');
-            
-            document.getElementById('result').style.display = 'none';
-            document.getElementById('edResult').style.display = 'none';
-        }
+    <!-- OTOLARYNGOLOGY -->
+    <div id="spec-oto" class="specialty-panel">
+      <table class="cpt-table">
+        <thead><tr><th>CPT</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td class="cpt-code">42820</td><td class="cpt-desc">Tonsillectomy and adenoidectomy — under age 12<span class="cpt-flag">High Volume</span></td></tr>
+          <tr><td class="cpt-code">42821</td><td class="cpt-desc">Tonsillectomy and adenoidectomy — age 12 and over</td></tr>
+          <tr><td class="cpt-code">42825</td><td class="cpt-desc">Tonsillectomy — primary or secondary, under age 12</td></tr>
+          <tr><td class="cpt-code">42826</td><td class="cpt-desc">Tonsillectomy — primary or secondary, age 12 and over</td></tr>
+          <tr><td class="cpt-code">42830</td><td class="cpt-desc">Adenoidectomy — primary, under age 12</td></tr>
+          <tr><td class="cpt-code">42831</td><td class="cpt-desc">Adenoidectomy — primary, age 12 and over</td></tr>
+          <tr><td class="cpt-code">69436</td><td class="cpt-desc">Tympanostomy (requiring insertion of ventilating tube), general anesthesia<span class="cpt-flag">High Volume</span></td></tr>
+          <tr><td class="cpt-code">69421</td><td class="cpt-desc">Myringotomy including aspiration and inflation of Eustachian tube</td></tr>
+          <tr><td class="cpt-code">69424</td><td class="cpt-desc">Ventilating tube removal requiring general anesthesia</td></tr>
+          <tr><td class="cpt-code">31254</td><td class="cpt-desc">Nasal/sinus endoscopy, surgical; with partial ethmoidectomy</td></tr>
+          <tr><td class="cpt-code">31255</td><td class="cpt-desc">Nasal/sinus endoscopy, surgical; with total ethmoidectomy</td></tr>
+          <tr><td class="cpt-code">31256</td><td class="cpt-desc">Nasal/sinus endoscopy, surgical; with maxillary antrostomy</td></tr>
+          <tr><td class="cpt-code">31267</td><td class="cpt-desc">Nasal/sinus endoscopy, surgical; with maxillary antrostomy, with removal of tissue</td></tr>
+          <tr><td class="cpt-code">31276</td><td class="cpt-desc">Nasal/sinus endoscopy, surgical, with frontal sinus exploration, including removal of tissue</td></tr>
+          <tr><td class="cpt-code">31287</td><td class="cpt-desc">Nasal/sinus endoscopy, surgical; with sphenoidotomy</td></tr>
+          <tr><td class="cpt-code">30140</td><td class="cpt-desc">Submucous resection inferior turbinate, partial or complete, any method (SMR)</td></tr>
+          <tr><td class="cpt-code">30520</td><td class="cpt-desc">Septoplasty or submucous resection, with or without cartilage scoring, contouring, or replacement with graft</td></tr>
+          <tr><td class="cpt-code">30930</td><td class="cpt-desc">Fracture nasal inferior turbinate(s), therapeutic</td></tr>
+          <tr><td class="cpt-code">31600</td><td class="cpt-desc">Tracheostomy — planned (separate procedure)</td></tr>
+          <tr><td class="cpt-code">31601</td><td class="cpt-desc">Tracheostomy — planned (separate procedure); under 2 years</td></tr>
+          <tr><td class="cpt-code">31603</td><td class="cpt-desc">Tracheostomy, emergency procedure; transtracheal</td></tr>
+          <tr><td class="cpt-code">69930</td><td class="cpt-desc">Cochlear implant with mastoidectomy</td></tr>
+          <tr><td class="cpt-code">69220</td><td class="cpt-desc">Mastoidectomy — complete, without hearing canal wall reconstruction</td></tr>
+          <tr><td class="cpt-code">69930</td><td class="cpt-desc">Cochlear device implantation with mastoidectomy</td></tr>
+          <tr><td class="cpt-code">40808</td><td class="cpt-desc">Biopsy, vestibule of mouth</td></tr>
+          <tr><td class="cpt-code">42408</td><td class="cpt-desc">Excision of sublingual salivary cyst (ranula)</td></tr>
+          <tr><td class="cpt-code">42410</td><td class="cpt-desc">Excision of parotid tumor or parotid gland; lateral lobe, without nerve dissection</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="padding-bottom:6px;"></div>
+  </div>
+</div>
 
-        // --- INPATIENT CALCULATOR LOGIC ---
-        function updateUI() {
-            const type = document.getElementById('encounterType').value;
-            const radioMdm = document.getElementById('radioMdm');
-            const radioTime = document.getElementById('radioTime');
-            const note = document.getElementById('encounterNote');
-            const payerGroup = document.getElementById('payerGroup');
+<!-- ==================== POA ==================== -->
+<div id="pg-poa" class="page-view">
+  <h1 class="page-title">POA Indicator Reference</h1>
+  <p class="page-subtitle">Present on Admission indicators — definitions, rules &amp; clinical examples</p>
 
-            note.innerText = "";
-            payerGroup.style.display = "block";
+  <div class="poa-grid">
+    <div class="poa-card">
+      <div class="poa-indicator">Y</div>
+      <div class="poa-name">Present at Admission</div>
+      <div class="poa-desc">Condition present at the time the order for inpatient admission occurs. Includes conditions that develop during outpatient encounters (ED, observation) prior to inpatient admission.</div>
+      <div class="poa-example">Example: Patient with known COPD admitted for COPD exacerbation. POA = Y.</div>
+    </div>
+    <div class="poa-card n">
+      <div class="poa-indicator">N</div>
+      <div class="poa-name">Not Present at Admission</div>
+      <div class="poa-desc">Condition was not present at the time of inpatient admission. Typically includes hospital-acquired conditions (HAC), complications, or new diagnoses that arose after admission.</div>
+      <div class="poa-example" style="color:var(--red);background:rgba(244,116,116,0.08)">Example: CAUTI developing on day 4 of admission. POA = N. (HAC implications!)</div>
+    </div>
+    <div class="poa-card w">
+      <div class="poa-indicator">W</div>
+      <div class="poa-name">Clinically Undetermined</div>
+      <div class="poa-desc">The documentation is insufficient to determine if the condition was present at the time of inpatient admission. Provider is unable to clinically determine whether the condition was POA or not.</div>
+      <div class="poa-example">Example: A small bowel obstruction found on imaging — unclear if present prior to admission or developed after.</div>
+    </div>
+    <div class="poa-card u">
+      <div class="poa-indicator">U</div>
+      <div class="poa-name">Documentation Insufficient</div>
+      <div class="poa-desc">Documentation is insufficient to determine if the condition was present at the time of admission. Assign when unable to clinically determine timing and documentation is unclear. Should prompt a physician query.</div>
+      <div class="poa-example" style="background:rgba(141,136,171,0.08)">Example: Stage unknown pressure ulcer documented on admission with no wound assessment.</div>
+    </div>
+    <div class="poa-card exempt">
+      <div class="poa-indicator">1</div>
+      <div class="poa-name">Exempt from POA Reporting</div>
+      <div class="poa-desc">Replaces the former "E" indicator. Used for conditions/codes that are on the CMS POA Exempt List. These diagnoses do not require POA designation because they are always considered present at admission by nature of what they represent.</div>
+      <div class="poa-example">Common Exempt Examples: External cause codes (V/W/X/Y), Z codes for patient history, codes for healthy newborns, congenital anomaly codes.</div>
+    </div>
+  </div>
 
-            if (type === 'discharge') {
-                radioTime.checked = true; radioMdm.disabled = true;
-                note.innerText = "*Discharge Day Management is based entirely on time, not MDM. Prolonged codes do not apply.";
-                payerGroup.style.display = "none"; toggleMethod();
-            } else {
-                radioMdm.disabled = false;
-                if (type === 'sameDay') note.innerText = "*CMS requires an 8 to 24-hour stay for these codes. If less than 8 hours, bill Initial Hospital Care.";
-                toggleMethod();
-            }
-        }
+  <div class="card">
+    <div class="card-label">Key POA Rules to Remember</div>
+    <table class="cpt-table">
+      <thead><tr><th>SCENARIO</th><th>POA</th><th>RATIONALE</th></tr></thead>
+      <tbody>
+        <tr><td>Condition present in the ED before inpatient order</td><td class="cpt-code" style="color:var(--teal)">Y</td><td>ED encounter is outpatient; if condition existed there, it was POA</td></tr>
+        <tr><td>Condition first diagnosed after admission order</td><td class="cpt-code" style="color:var(--red)">N</td><td>Developed post-admission regardless of when noted in notes</td></tr>
+        <tr><td>Chronic condition on problem list, not actively treated</td><td class="cpt-code" style="color:var(--teal)">Y</td><td>Pre-existing conditions are POA even if not the reason for admission</td></tr>
+        <tr><td>Surgical complication occurring in OR</td><td class="cpt-code" style="color:var(--red)">N</td><td>Did not exist prior to admission — arose during admission</td></tr>
+        <tr><td>Stage III pressure ulcer found on admission skin assessment</td><td class="cpt-code" style="color:var(--teal)">Y</td><td>Physical finding on admission exam = POA</td></tr>
+        <tr><td>Hospital-acquired infection (CAUTI, CLABSI)</td><td class="cpt-code" style="color:var(--red)">N</td><td>HAC — triggers payment implications; always N</td></tr>
+        <tr><td>Sepsis that develops from a UTI that was POA</td><td class="cpt-code" style="color:var(--red)">N</td><td>Even if infection was POA, sepsis itself may not have been present</td></tr>
+        <tr><td>Condition with ambiguous onset; query unanswered</td><td class="cpt-code" style="color:var(--muted)">U</td><td>Default to U when documentation is insufficient and query fails</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
 
-        function toggleMethod() {
-            const method = document.querySelector('input[name="method"]:checked').value;
-            if (method === 'mdm') {
-                document.getElementById('mdmSection').style.display = 'block'; document.getElementById('timeSection').style.display = 'none';
-            } else {
-                document.getElementById('mdmSection').style.display = 'none'; document.getElementById('timeSection').style.display = 'block';
-            }
-        }
+<!-- ==================== 2-MIDNIGHT ==================== -->
+<div id="pg-2mid" class="page-view">
+  <h1 class="page-title">2-Midnight Rule Guide</h1>
+  <p class="page-subtitle">CMS criteria for Inpatient vs. Observation status decisions</p>
 
-        function calculateCPT() {
-            const type = document.getElementById('encounterType').value;
-            const payer = document.querySelector('input[name="payer"]:checked').value;
-            const method = document.querySelector('input[name="method"]:checked').value;
-            let output = ""; let isError = false;
+  <div class="card">
+    <div class="card-label">Decision Flowchart</div>
+    <div class="flowchart">
+      <div class="flow-node decision">Is the patient being admitted to the hospital?</div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-node">Does the admitting physician expect the patient to need care spanning at least 2 midnights?</div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-branches">
+        <div>
+          <div class="branch-label">✓ YES</div>
+          <div class="flow-node inpatient">INPATIENT ADMISSION<div class="flow-sub">Bill using inpatient CPT codes (99221–99223)</div></div>
+        </div>
+        <div>
+          <div class="branch-label">✗ NO</div>
+          <div class="flow-node observation">OUTPATIENT — OBSERVATION<div class="flow-sub">Consider G-codes or outpatient E/M codes</div></div>
+        </div>
+      </div>
+      <div class="flow-arrow" style="margin-top:10px;">↓ If YES, continue</div>
+      <div class="flow-node">Is the expectation based on complex medical judgment / documented clinical reasons?</div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-branches">
+        <div>
+          <div class="branch-label">✓ DOCUMENTED</div>
+          <div class="flow-node inpatient">INPATIENT SUPPORTED<div class="flow-sub">Admission order + physician attestation required</div></div>
+        </div>
+        <div>
+          <div class="branch-label">✗ NOT DOCUMENTED</div>
+          <div class="flow-node outpatient">RISK OF DENIAL<div class="flow-sub">May be downgraded to observation on review</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-            if (method === 'mdm') {
-                const mdm = document.getElementById('mdmLevel').value;
-                if (type === 'initial') { if (mdm === 'low') output = "99221"; else if (mdm === 'moderate') output = "99222"; else output = "99223"; } 
-                else if (type === 'subsequent') { if (mdm === 'low') output = "99231"; else if (mdm === 'moderate') output = "99232"; else output = "99233"; } 
-                else if (type === 'sameDay') { if (mdm === 'low') output = "99234"; else if (mdm === 'moderate') output = "99235"; else output = "99236"; }
-                output = "Suggested CPT (Based on MDM): " + output;
-            } else {
-                const timeStr = document.getElementById('timeMinutes').value;
-                if (!timeStr) { showResult('result', "Please enter total minutes.", true); return; }
-                const time = parseInt(timeStr, 10);
-                let baseCode = ""; let prolongedCode = ""; let prolongedUnits = 0;
+  <div class="card">
+    <div class="card-label">Special Circumstances — Always Inpatient</div>
+    <table class="cpt-table">
+      <thead><tr><th>EXCEPTION</th><th>NOTES</th></tr></thead>
+      <tbody>
+        <tr><td>CMS-designated inpatient-only procedures</td><td>A list of procedures that CMS has determined can only be billed as inpatient (e.g., major cardiac surgeries, complex spinal fusions)</td></tr>
+        <tr><td>Mechanical ventilation ≥ 96 hours expected</td><td>Anticipated prolonged mechanical ventilation always supports inpatient</td></tr>
+        <tr><td>Complex surgical procedure requiring overnight recovery</td><td>When post-surgical monitoring requires inpatient-level care across 2 midnights</td></tr>
+        <tr><td>Qualifying stay at another facility</td><td>Days at a prior acute care hospital within 3 days may be combined to meet the 2-midnight benchmark</td></tr>
+      </tbody>
+    </table>
+  </div>
 
-                if (type === 'initial') {
-                    if (time < 40) { isError = true; output = "Time does not meet the 40-minute minimum for 99221."; }
-                    else if (time <= 54) baseCode = "99221"; else if (time <= 74) baseCode = "99222"; else {
-                        baseCode = "99223";
-                        if (payer === 'ama' && time >= 90) { prolongedUnits = Math.floor((time - 75) / 15); prolongedCode = "99418"; }
-                        else if (payer === 'cms' && time >= 105) { prolongedUnits = Math.floor((time - 90) / 15); prolongedCode = "G0316"; }
-                    }
-                } else if (type === 'subsequent') {
-                    if (time < 25) { isError = true; output = "Time does not meet the 25-minute minimum for 99231."; }
-                    else if (time <= 34) baseCode = "99231"; else if (time <= 49) baseCode = "99232"; else {
-                        baseCode = "99233";
-                        if (payer === 'ama' && time >= 65) { prolongedUnits = Math.floor((time - 50) / 15); prolongedCode = "99418"; }
-                        else if (payer === 'cms' && time >= 80) { prolongedUnits = Math.floor((time - 65) / 15); prolongedCode = "G0316"; }
-                    }
-                } else if (type === 'sameDay') {
-                    if (time < 45) { isError = true; output = "Time does not meet the 45-minute minimum for 99234."; }
-                    else if (time <= 69) baseCode = "99234"; else if (time <= 84) baseCode = "99235"; else {
-                        baseCode = "99236";
-                        if (payer === 'ama' && time >= 100) { prolongedUnits = Math.floor((time - 85) / 15); prolongedCode = "99418"; }
-                        else if (payer === 'cms' && time >= 110) { prolongedUnits = Math.floor((time - 95) / 15); prolongedCode = "G0316"; }
-                    }
-                } else if (type === 'discharge') {
-                    if (time <= 30) baseCode = "99238"; else baseCode = "99239";
-                }
+  <div class="card">
+    <div class="card-label">Important Definitions</div>
+    <table class="cpt-table">
+      <tbody>
+        <tr><td style="font-weight:700; white-space:nowrap;">2-Midnight Benchmark</td><td>CMS generally considers an inpatient admission reasonable and necessary if a physician reasonably expects the patient to require hospital care spanning at least 2 midnights.</td></tr>
+        <tr><td style="font-weight:700; white-space:nowrap;">2-Midnight Presumption</td><td>If actual inpatient stay spans at least 2 midnights after the admission order, CMS will presume the stay was appropriate (subject to medical necessity review).</td></tr>
+        <tr><td style="font-weight:700; white-space:nowrap;">Physician Attestation</td><td>Required documentation that the admitting physician expected the patient to need hospital care for at least 2 midnights based on clinical factors.</td></tr>
+        <tr><td style="font-weight:700; white-space:nowrap;">QIO / RAC Review</td><td>Recovery Audit Contractors can review claims where actual stay was less than 2 midnights. Robust documentation is essential for defense.</td></tr>
+        <tr><td style="font-weight:700; white-space:nowrap;">Observation Status</td><td>Outpatient status — does NOT count toward SNF qualifying stay (3-day inpatient requirement). Patients may owe more out-of-pocket under Medicare.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
 
-                if (!isError) {
-                    output = `Primary CPT (Based on Time): ${baseCode}`;
-                    if (prolongedUnits > 0) output += `<br><br>+ Prolonged Services:<br>${prolongedCode} x ${prolongedUnits} unit(s)`;
-                }
-            }
-            showResult('result', output, isError);
-        }
+<!-- ==================== QUERY GENERATOR ==================== -->
+<div id="pg-query" class="page-view">
+  <h1 class="page-title">Physician Query Generator</h1>
+  <p class="page-subtitle">Generate compliant query templates for common inpatient scenarios</p>
 
-        // --- ED CALCULATOR LOGIC ---
-        function calculateED() {
-            const mdm = document.getElementById('edMdmLevel').value;
-            let output = "";
-            if (mdm === 'none') output = "99281"; else if (mdm === 'straightforward') output = "99282";
-            else if (mdm === 'low') output = "99283"; else if (mdm === 'moderate') output = "99284"; else if (mdm === 'high') output = "99285";
-            showResult('edResult', "Suggested ED CPT: " + output, false);
-        }
+  <div class="card">
+    <div class="form-group">
+      <label class="field-label">Query Type</label>
+      <select id="queryType" onchange="updateQueryForm()">
+        <option value="wound">Wound Classification</option>
+        <option value="poa">POA Clarification</option>
+        <option value="specificity">Diagnosis Specificity</option>
+        <option value="sepsis">Sepsis / Infection Source</option>
+        <option value="principal">Principal Diagnosis Clarification</option>
+        <option value="procedure">Procedure Specificity</option>
+        <option value="complication">Complication vs. Expected Outcome</option>
+        <option value="encephalopathy">Encephalopathy Type</option>
+      </select>
+    </div>
 
-        // --- MODIFIER SEARCH LOGIC ---
-        function filterModifiers() {
-            const input = document.getElementById('modSearchInput').value.toUpperCase();
-            const cards = document.getElementById('modifierList').getElementsByClassName('mod-card');
-            for (let i = 0; i < cards.length; i++) {
-                let textContent = cards[i].innerText || cards[i].textContent;
-                cards[i].classList.toggle('hidden', textContent.toUpperCase().indexOf(input) === -1);
-            }
-        }
+    <div id="queryFields">
+      <!-- Dynamic fields injected here -->
+    </div>
 
-        // --- FLASHCARD LOGIC ---
-        const flashcards = [
-            { q: "What is the Root Operation for a colonoscopy with removal of a polyp by snare technique?", a: "Excision (Root Operation B). Some of the body part is cut out or off, without replacement." },
-            { q: "What is the Medicare 3-Day Payment Window Rule?", a: "Outpatient diagnostic services and admission-related non-diagnostic services provided within 3 days prior to an inpatient admission are bundled into the inpatient payment." },
-            { q: "When is a condition considered 'Present on Admission' (POA indicator Y)?", a: "Conditions present at the time the order for inpatient admission occurs. This includes conditions that develop during an outpatient encounter (like the ED) prior to admission." },
-            { q: "What is the Root Operation for a total right knee replacement?", a: "Replacement (Root Operation R). Putting in or on biological or synthetic material that physically takes the place and/or function of all or a portion of a body part." },
-            { q: "If a patient is admitted for dehydration secondary to severe gastroenteritis, what is the principal diagnosis?", a: "Dehydration. When a patient is admitted for a symptom/manifestation of an underlying condition and the symptom is the primary focus of care (like IV fluids), sequence the symptom first." }
-        ];
-        
-        let currentCardIndex = 0;
+    <div style="margin-top:4px;">
+      <label class="field-label">Patient / Additional Context (optional)</label>
+      <input type="text" id="queryPatientInfo" placeholder="e.g., 67M with DM2, admitted 03/10">
+    </div>
+  </div>
 
-        function renderCard() {
-            const cardContainer = document.getElementById('flashcardContainer');
-            cardContainer.classList.remove('flipped'); // Reset flip state
-            
-            // Wait for flip animation to finish before swapping text to prevent seeing the text backwards
-            setTimeout(() => {
-                document.getElementById('flashcardQuestion').innerText = flashcards[currentCardIndex].q;
-                document.getElementById('flashcardAnswer').innerText = flashcards[currentCardIndex].a;
-                document.getElementById('cardCounter').innerText = `Card ${currentCardIndex + 1} of ${flashcards.length}`;
-            }, 150);
-        }
+  <button class="btn-primary" onclick="generateQuery()">Generate Query Template →</button>
 
-        function flipCard() {
-            document.getElementById('flashcardContainer').classList.toggle('flipped');
-        }
+  <div id="queryOutput" class="query-output">
+    <button class="copy-btn" onclick="copyQuery()">Copy</button>
+    <div id="queryText"></div>
+  </div>
 
-        function nextCard() {
-            currentCardIndex = (currentCardIndex + 1) % flashcards.length;
-            renderCard();
-        }
+  <div class="card" style="margin-top:16px;">
+    <div class="card-label">Query Compliance Reminders</div>
+    <ul style="font-size:0.85em; color:var(--muted); line-height:2; padding-left:18px;">
+      <li>Queries must be <strong style="color:var(--text)">non-leading</strong> — present all clinically reasonable options</li>
+      <li>Include clinical indicators from the record to support the query</li>
+      <li>Must be performed concurrently or retrospectively — not to change a clear diagnosis</li>
+      <li>AHIMA and ACDIS guidelines prohibit "fishing" queries without clinical basis</li>
+      <li>Document query in the medical record per facility policy</li>
+      <li>Verbal queries must be followed up in writing per most facility policies</li>
+    </ul>
+  </div>
+</div>
 
-        function prevCard() {
-            currentCardIndex = (currentCardIndex - 1 + flashcards.length) % flashcards.length;
-            renderCard();
-        }
+<!-- ==================== FLASHCARDS ==================== -->
+<div id="pg-flash" class="page-view">
+  <h1 class="page-title">CIC Exam Flashcards</h1>
+  <p class="page-subtitle">50 cards covering ICD-10-PCS, POA, DRGs, Official Guidelines &amp; more</p>
 
-        // --- SHARED UI LOGIC & INIT ---
-        function showResult(boxId, text, isError) {
-            const resultBox = document.getElementById(boxId);
-            resultBox.innerHTML = text; resultBox.style.display = 'block';
-            resultBox.className = isError ? 'result-box error' : 'result-box success';
-        }
+  <div class="fc-filter-bar">
+    <button class="fc-filter active" onclick="filterCards(this,'all')">All (50)</button>
+    <button class="fc-filter" onclick="filterCards(this,'pcs')">ICD-10-PCS</button>
+    <button class="fc-filter" onclick="filterCards(this,'cm')">ICD-10-CM</button>
+    <button class="fc-filter" onclick="filterCards(this,'drg')">DRG / MS-DRG</button>
+    <button class="fc-filter" onclick="filterCards(this,'poa')">POA Rules</button>
+    <button class="fc-filter" onclick="filterCards(this,'guidelines')">Guidelines</button>
+    <button class="fc-filter" onclick="filterCards(this,'specialty')">Specialty</button>
+  </div>
 
-        updateUI(); // Init forms
-        renderCard(); // Init flashcards
-    </script>
+  <div class="fc-progress"><div class="fc-progress-bar" id="fcProgressBar"></div></div>
+
+  <div class="fc-container" id="flashcardContainer" onclick="flipCard()">
+    <div class="fc-inner">
+      <div class="fc-face fc-front">
+        <div class="fc-category" id="fcCategory">Category</div>
+        <div class="fc-label">Question</div>
+        <div class="fc-text" id="fcQuestion">Loading...</div>
+        <div class="fc-hint">Tap card to reveal answer</div>
+      </div>
+      <div class="fc-face fc-back">
+        <div class="fc-category" id="fcCategoryBack">Category</div>
+        <div class="fc-label">Answer</div>
+        <div class="fc-text" id="fcAnswer">Loading...</div>
+        <div class="fc-hint">Tap to flip back</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="fc-controls">
+    <button class="fc-btn" onclick="prevCard()">← Prev</button>
+    <button class="fc-btn" onclick="shuffleCards()">⇄ Shuffle</button>
+    <button class="fc-btn" onclick="nextCard()">Next →</button>
+  </div>
+  <div class="fc-meta">
+    <span id="fcCounter">Card 1 of 50</span>
+    <span id="fcCatLabel" style="color:var(--primary); font-weight:600;"></span>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<script>
+// ===== NAVIGATION =====
+function showPage(event, pageId) {
+  if (event.target.classList.contains('ext-link')) return;
+  document.querySelectorAll('.page-view').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(a => a.classList.remove('active'));
+  document.getElementById(pageId).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ===== INPATIENT CALCULATOR =====
+function updateUI() {
+  const type = document.getElementById('encounterType').value;
+  const radioMdm = document.getElementById('radioMdm');
+  const note = document.getElementById('encounterNote');
+  const payerGroup = document.getElementById('payerGroup');
+  note.style.display = 'none'; note.innerText = '';
+  payerGroup.style.display = 'block';
+  if (type === 'discharge') {
+    document.getElementById('radioTime').checked = true;
+    radioMdm.disabled = true;
+    note.innerText = 'Discharge Day Management is based entirely on time, not MDM. Prolonged codes do not apply.';
+    note.style.display = 'block'; payerGroup.style.display = 'none'; toggleMethod();
+  } else {
+    radioMdm.disabled = false;
+    if (type === 'sameDay') { note.innerText = 'CMS requires an 8–24 hour stay for 99234–99236. If less than 8 hours, bill Initial Hospital Care codes.'; note.style.display = 'block'; }
+    toggleMethod();
+  }
+}
+function toggleMethod() {
+  const method = document.querySelector('input[name="method"]:checked').value;
+  document.getElementById('mdmSection').style.display = method === 'mdm' ? 'block' : 'none';
+  document.getElementById('timeSection').style.display = method === 'time' ? 'block' : 'none';
+}
+function calculateCPT() {
+  const type = document.getElementById('encounterType').value;
+  const payer = document.querySelector('input[name="payer"]:checked').value;
+  const method = document.querySelector('input[name="method"]:checked').value;
+  let output = ''; let isError = false;
+  if (method === 'mdm') {
+    const mdm = document.getElementById('mdmLevel').value;
+    let code = '';
+    if (type === 'initial') code = mdm==='low'?'99221':mdm==='moderate'?'99222':'99223';
+    else if (type === 'subsequent') code = mdm==='low'?'99231':mdm==='moderate'?'99232':'99233';
+    else if (type === 'sameDay') code = mdm==='low'?'99234':mdm==='moderate'?'99235':'99236';
+    output = `<div class="code-chip">${code}</div><br><small style="color:var(--muted);font-size:0.7em;font-weight:400;">Based on MDM — ${mdm.charAt(0).toUpperCase()+mdm.slice(1)} complexity</small>`;
+  } else {
+    const timeStr = document.getElementById('timeMinutes').value;
+    if (!timeStr) { showResult('result','Please enter total minutes.',true); return; }
+    const time = parseInt(timeStr, 10);
+    let baseCode = ''; let prolongedCode = ''; let prolongedUnits = 0; let prolongedMin = 0;
+    if (type === 'initial') {
+      if (time < 40) { isError = true; output = 'Time (' + time + ' min) does not meet the 40-minute minimum for 99221.'; }
+      else if (time <= 54) baseCode = '99221'; else if (time <= 74) baseCode = '99222';
+      else { baseCode = '99223'; if (payer==='ama'&&time>=90){prolongedUnits=Math.floor((time-75)/15);prolongedCode='99418';prolongedMin=time-75;}
+        else if (payer==='cms'&&time>=105){prolongedUnits=Math.floor((time-90)/15);prolongedCode='G0316';prolongedMin=time-90;} }
+    } else if (type === 'subsequent') {
+      if (time < 25) { isError = true; output = 'Time (' + time + ' min) does not meet the 25-minute minimum for 99231.'; }
+      else if (time <= 34) baseCode = '99231'; else if (time <= 49) baseCode = '99232';
+      else { baseCode = '99233'; if (payer==='ama'&&time>=65){prolongedUnits=Math.floor((time-50)/15);prolongedCode='99418';prolongedMin=time-50;}
+        else if (payer==='cms'&&time>=80){prolongedUnits=Math.floor((time-65)/15);prolongedCode='G0316';prolongedMin=time-65;} }
+    } else if (type === 'sameDay') {
+      if (time < 45) { isError = true; output = 'Time (' + time + ' min) does not meet the 45-minute minimum for 99234.'; }
+      else if (time <= 69) baseCode = '99234'; else if (time <= 84) baseCode = '99235';
+      else { baseCode = '99236'; if (payer==='ama'&&time>=100){prolongedUnits=Math.floor((time-85)/15);prolongedCode='99418';prolongedMin=time-85;}
+        else if (payer==='cms'&&time>=110){prolongedUnits=Math.floor((time-95)/15);prolongedCode='G0316';prolongedMin=time-95;} }
+    } else if (type === 'discharge') {
+      baseCode = time <= 30 ? '99238' : '99239';
+    }
+    if (!isError) {
+      output = `<div class="code-chip">${baseCode}</div>`;
+      if (prolongedUnits > 0) output += `<br>+ Prolonged: <div class="code-chip gold">${prolongedCode} × ${prolongedUnits}</div><br><small style="color:var(--muted);font-size:0.7em;font-weight:400;">${prolongedMin} min of prolonged time documented required</small>`;
+      output += `<br><small style="color:var(--muted);font-size:0.7em;font-weight:400;">Based on ${time} total minutes — ${payer.toUpperCase()} payer</small>`;
+    }
+  }
+  showResult('result', output, isError);
+}
+
+// ===== ED CALCULATOR =====
+function calculateED() {
+  const mdm = document.getElementById('edMdmLevel').value;
+  const codes = {none:'99281',straightforward:'99282',low:'99283',moderate:'99284',high:'99285'};
+  showResult('edResult', `<div class="code-chip">${codes[mdm]}</div><br><small style="color:var(--muted);font-size:0.7em;font-weight:400;">Based on ${mdm.charAt(0).toUpperCase()+mdm.slice(1)} MDM</small>`, false);
+}
+
+// ===== RESULT =====
+function showResult(id, html, isError) {
+  const box = document.getElementById(id);
+  box.innerHTML = html; box.style.display = 'block';
+  box.className = 'result-box ' + (isError ? 'result-error' : 'result-success');
+}
+
+// ===== MODIFIERS =====
+let currentCatFilter = 'all';
+function filterModifiers() {
+  const q = document.getElementById('modSearchInput').value.toUpperCase();
+  document.querySelectorAll('#modifierList .mod-card').forEach(card => {
+    const text = card.innerText.toUpperCase();
+    const cat = card.dataset.cat;
+    const matchesSearch = !q || text.includes(q);
+    const matchesCat = currentCatFilter === 'all' || cat === currentCatFilter;
+    card.classList.toggle('hidden', !(matchesSearch && matchesCat));
+  });
+}
+function filterByCategory(btn, cat) {
+  currentCatFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filterModifiers();
+}
+
+// ===== SPECIALTY TABS =====
+function showSpecialty(btn, panelId) {
+  document.querySelectorAll('.spec-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.specialty-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('spec-' + panelId).classList.add('active');
+}
+
+// ===== QUERY GENERATOR =====
+const queryConfigs = {
+  wound: {
+    fields: [
+      { id: 'qProcedure', label: 'Surgical Procedure', placeholder: 'e.g., laparoscopic cholecystectomy' },
+      { id: 'qIndicators', label: 'Clinical Indicators (e.g., spillage, inflammation, contamination)', placeholder: 'e.g., purulent material encountered, bowel perforation noted' }
+    ],
+    template: (f, pt) => `PHYSICIAN QUERY — WOUND CLASSIFICATION\n${pt ? 'Patient: ' + pt + '\n' : ''}Procedure: ${f.qProcedure||'[Procedure]'}\n\nClinical Indicators from Documentation:\n${f.qIndicators||'[Clinical findings]'}\n\nBased on the operative report and clinical documentation, please clarify the wound classification for the above procedure:\n\n□ Clean — No inflammation, no break in technique, no entry into respiratory/GI/GU tract\n□ Clean-Contaminated — Entry into respiratory/GI/GU tract without unusual contamination\n□ Contaminated — Fresh traumatic wound, gross spillage, major break in technique\n□ Dirty/Infected — Old traumatic wound, existing infection, perforated viscera\n□ Unable to determine from available information\n\nSignature: _________________ Date: _________`
+  },
+  poa: {
+    fields: [
+      { id: 'qDx', label: 'Diagnosis in Question', placeholder: 'e.g., acute kidney injury, pressure ulcer, DVT' },
+      { id: 'qEvidence', label: 'Supporting Clinical Evidence', placeholder: 'e.g., Cr 1.8 on admission, stage II sacral ulcer noted on assessment' }
+    ],
+    template: (f, pt) => `PHYSICIAN QUERY — PRESENT ON ADMISSION CLARIFICATION\n${pt ? 'Patient: ' + pt + '\n' : ''}Diagnosis: ${f.qDx||'[Diagnosis]'}\n\nClinical Evidence from Record:\n${f.qEvidence||'[Clinical findings]'}\n\nBased on the available clinical documentation, please clarify whether ${f.qDx||'[diagnosis]'} was present at the time of inpatient admission:\n\n□ Yes — Present at the time of inpatient admission\n□ No — Not present at the time of inpatient admission; arose after admission\n□ Clinically undetermined — Unable to determine timing based on clinical presentation\n□ Unable to determine — Insufficient documentation to determine\n\nSignature: _________________ Date: _________`
+  },
+  specificity: {
+    fields: [
+      { id: 'qVague', label: 'Current Vague Documentation', placeholder: 'e.g., "anemia", "renal failure", "respiratory failure"' },
+      { id: 'qLabs', label: 'Supporting Clinical Data', placeholder: 'e.g., Hgb 7.2, transfused 2 units pRBC; Cr 3.1 from baseline 1.0' }
+    ],
+    template: (f, pt) => `PHYSICIAN QUERY — DIAGNOSIS SPECIFICITY\n${pt ? 'Patient: ' + pt + '\n' : ''}Current Documentation: "${f.qVague||'[vague term]'}"\n\nClinical Data Available:\n${f.qLabs||'[Clinical findings]'}\n\nBased on the clinical findings documented above, can you provide additional specificity for this diagnosis?\n\n□ ${f.qVague||'[Condition]'} — specify type/etiology: _______________________\n□ Clinical significance not meeting criteria for a reportable condition at this time\n□ Unable to further specify at this time\n□ Other: _______________________\n\nSignature: _________________ Date: _________`
+  },
+  sepsis: {
+    fields: [
+      { id: 'qInfection', label: 'Identified Infection / Source', placeholder: 'e.g., UTI, pneumonia, wound infection, bacteremia' },
+      { id: 'qSirs', label: 'SIRS Criteria / Organ Dysfunction Noted', placeholder: 'e.g., WBC 18k, HR 112, Temp 38.9°C, altered mental status' }
+    ],
+    template: (f, pt) => `PHYSICIAN QUERY — SEPSIS / INFECTION SOURCE CLARIFICATION\n${pt ? 'Patient: ' + pt + '\n' : ''}Documented Infection: ${f.qInfection||'[Infection]'}\n\nClinical Findings:\n${f.qSirs||'[SIRS criteria / organ dysfunction]'}\n\nBased on the clinical indicators above, please clarify your clinical diagnosis:\n\n□ Sepsis — due to ${f.qInfection||'[source]'}\n□ Severe Sepsis — due to ${f.qInfection||'[source]'} with acute organ dysfunction\n□ Septic Shock — due to ${f.qInfection||'[source]'} with cardiovascular failure / vasopressor requirement\n□ Infection without sepsis — ${f.qInfection||'[source]'} without systemic inflammatory response meeting sepsis criteria\n□ Bacteremia — without sepsis\n□ Unable to determine / clinically undetermined\n\nSignature: _________________ Date: _________`
+  },
+  principal: {
+    fields: [
+      { id: 'qDx1', label: 'Condition #1', placeholder: 'e.g., CHF exacerbation' },
+      { id: 'qDx2', label: 'Condition #2', placeholder: 'e.g., acute on chronic renal failure' }
+    ],
+    template: (f, pt) => `PHYSICIAN QUERY — PRINCIPAL DIAGNOSIS CLARIFICATION\n${pt ? 'Patient: ' + pt + '\n' : ''}\nTwo conditions appear to equally qualify as the principal diagnosis after study. Per coding guidelines, the principal diagnosis is the condition established after study to be chiefly responsible for the admission.\n\nCondition A: ${f.qDx1||'[Condition 1]'}\nCondition B: ${f.qDx2||'[Condition 2]'}\n\nPlease indicate which condition was chiefly responsible for occasioning the admission:\n\n□ ${f.qDx1||'Condition A'} — primary reason for admission\n□ ${f.qDx2||'Condition B'} — primary reason for admission\n□ Both conditions equally contributed (either may be sequenced as principal)\n□ Neither — principal diagnosis is: _______________________\n\nSignature: _________________ Date: _________`
+  },
+  procedure: {
+    fields: [
+      { id: 'qProcName', label: 'Procedure Name', placeholder: 'e.g., cystoscopy, TURP, laparoscopic procedure' },
+      { id: 'qApproach', label: 'Approach / Details Needed', placeholder: 'e.g., open vs. laparoscopic, partial vs. complete, scope size' }
+    ],
+    template: (f, pt) => `PHYSICIAN QUERY — PROCEDURE SPECIFICITY\n${pt ? 'Patient: ' + pt + '\n' : ''}Procedure: ${f.qProcName||'[Procedure]'}\n\nAdditional Detail Needed: ${f.qApproach||'[Specify]'}\n\nTo ensure accurate ICD-10-PCS coding, please clarify the following for the above procedure:\n\n□ Approach: □ Open  □ Percutaneous Endoscopic  □ Laparoscopic  □ Via Natural/Artificial Opening  □ Endoscopic  □ Other: ___\n□ Extent: □ Complete  □ Partial  □ Other: _______________\n□ Device left in place: □ Yes — specify: _______________  □ No\n□ Root Operation: □ Excision  □ Resection  □ Repair  □ Replacement  □ Insertion  □ Other: ___\n□ Other clarification needed: _______________________\n\nSignature: _________________ Date: _________`
+  },
+  complication: {
+    fields: [
+      { id: 'qEvent', label: 'Clinical Event in Question', placeholder: 'e.g., postoperative fever, elevated creatinine after contrast' },
+      { id: 'qContext', label: 'Relevant Context', placeholder: 'e.g., post appendectomy day 2, creatinine rose from 1.1 to 2.3' }
+    ],
+    template: (f, pt) => `PHYSICIAN QUERY — COMPLICATION vs. EXPECTED OUTCOME\n${pt ? 'Patient: ' + pt + '\n' : ''}Event: ${f.qEvent||'[Event]'}\nClinical Context: ${f.qContext||'[Context]'}\n\nPlease clarify whether the above represents a complication of care or an expected/inherent outcome:\n\n□ Complication of surgery / procedure — specify: _______________________\n□ Complication of medical treatment — specify: _______________________\n□ Expected outcome / inherent risk of the procedure or disease process — not a reportable complication\n□ Pre-existing condition, not related to current hospitalization\n□ Clinically undetermined\n\nSignature: _________________ Date: _________`
+  },
+  encephalopathy: {
+    fields: [
+      { id: 'qEncSymp', label: 'Symptoms / Clinical Findings', placeholder: 'e.g., confusion, altered mental status, agitation, asterixis' },
+      { id: 'qEncCause', label: 'Suspected Etiology', placeholder: 'e.g., hepatic disease, metabolic derangement, sepsis, medication' }
+    ],
+    template: (f, pt) => `PHYSICIAN QUERY — ENCEPHALOPATHY TYPE CLARIFICATION\n${pt ? 'Patient: ' + pt + '\n' : ''}Symptoms: ${f.qEncSymp||'[Symptoms]'}\nSuspected Etiology: ${f.qEncCause||'[Etiology]'}\n\nThe medical record documents altered mental status / ${f.qEncSymp||'cognitive changes'}. To support accurate diagnosis coding, please clarify the type of encephalopathy:\n\n□ Metabolic encephalopathy — etiology: _______________________\n□ Toxic encephalopathy — specify agent: _______________________\n□ Septic encephalopathy — due to: _______________________\n□ Hepatic encephalopathy\n□ Hypoxic-ischemic encephalopathy\n□ Hypertensive encephalopathy\n□ Delirium — □ Hyperactive  □ Hypoactive  □ Mixed\n□ Not an encephalopathy — alternate diagnosis: _______________________\n□ Clinically undetermined\n\nSignature: _________________ Date: _________`
+  }
+};
+
+function updateQueryForm() {
+  const type = document.getElementById('queryType').value;
+  const config = queryConfigs[type];
+  const container = document.getElementById('queryFields');
+  document.getElementById('queryOutput').style.display = 'none';
+  container.innerHTML = config.fields.map(f => `
+    <div class="form-group">
+      <label class="field-label">${f.label}</label>
+      <input type="text" id="${f.id}" placeholder="${f.placeholder}">
+    </div>
+  `).join('');
+}
+
+function generateQuery() {
+  const type = document.getElementById('queryType').value;
+  const config = queryConfigs[type];
+  const fields = {};
+  config.fields.forEach(f => { fields[f.id] = document.getElementById(f.id)?.value || ''; });
+  const pt = document.getElementById('queryPatientInfo').value;
+  const text = config.template(fields, pt);
+  document.getElementById('queryText').innerText = text;
+  document.getElementById('queryOutput').style.display = 'block';
+}
+
+function copyQuery() {
+  const text = document.getElementById('queryText').innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    btn.innerText = '✓ Copied!';
+    setTimeout(() => { btn.innerText = 'Copy'; }, 1800);
+  });
+}
+
+// ===== FLASHCARDS =====
+const allFlashcards = [
+  // ICD-10-PCS
+  { cat:'pcs', q:'What are the 7 characters of an ICD-10-PCS code, in order?', a:'Section | Body System | Root Operation | Body Part | Approach | Device | Qualifier' },
+  { cat:'pcs', q:'What Root Operation is used for a colonoscopy with polypectomy using snare technique?', a:'Excision (B) — cutting out or off, without replacement, some of a body part. Snare removes only part of the colon, not the entire body part.' },
+  { cat:'pcs', q:'What Root Operation is used for total knee replacement?', a:'Replacement (R) — putting in or on biological or synthetic material that physically takes the place and/or function of all or a portion of a body part.' },
+  { cat:'pcs', q:'What is the ICD-10-PCS Root Operation for coronary artery bypass graft (CABG)?', a:'Bypass (1) — altering the route of passage of the contents of a tubular body part. The proximal end remains but flow is redirected.' },
+  { cat:'pcs', q:'What Root Operation applies when a surgeon removes a kidney tumor and the surrounding kidney tissue?', a:'If the entire kidney is removed: Resection (T). If only the tumor + margin is removed (partial nephrectomy): Excision (B).' },
+  { cat:'pcs', q:'A ureteral stent is inserted during cystoscopy. What Root Operation applies?', a:'Insertion (H) — putting in a nonbiological appliance that monitors, assists, performs, or prevents a physiological function but does not physically take the place of a body part.' },
+  { cat:'pcs', q:'What is the difference between Repair (Q) and Replacement (R) in ICD-10-PCS?', a:'Repair restores a body part to its normal structure/function without putting in any device. Replacement puts in a device that physically takes the place of the body part.' },
+  { cat:'pcs', q:'What approach value is used for laparoscopic procedures?', a:'4 — Percutaneous Endoscopic. Instrumentation is inserted through small punctures in the skin and the procedure is performed using visualization equipment.' },
+  { cat:'pcs', q:'What approach value is used for TURP (transurethral resection of the prostate)?', a:'8 — Via Natural or Artificial Opening Endoscopic. The procedure is performed through the urethra (natural opening) with a scope.' },
+  { cat:'pcs', q:'When is Root Operation Destruction (5) used vs. Excision (B)?', a:'Destruction uses physical eradication (laser, cautery, cryotherapy) to eliminate a body part without actually removing it. Excision physically cuts out or off a portion of a body part.' },
+  { cat:'pcs', q:'What is the Root Operation for a tracheostomy?', a:'Bypass (1) — the procedure alters the route of airflow from the trachea to an external opening. NOT Incision or Drainage.' },
+  { cat:'pcs', q:'What Root Operation is used for IOL (intraocular lens) insertion during cataract surgery?', a:'Replacement (R) — the crystalline lens is removed (the Excision/Resection of the lens is included) and the IOL takes the place of the body part.' },
+  // ICD-10-CM
+  { cat:'cm', q:'When should a symptom code be sequenced as the principal diagnosis instead of the underlying condition?', a:'When the symptom is the primary reason for the admission and the underlying etiology is not confirmed. Also when a patient is admitted for a symptom like dehydration and the underlying condition (e.g., nausea) is not separately treated.' },
+  { cat:'cm', q:'What is the correct sequencing for a diabetic patient admitted for a diabetic complication (e.g., diabetic nephropathy)?', a:'Sequence the combination code for the diabetic complication first (e.g., E11.21 for T2DM with diabetic nephropathy), followed by the stage of CKD if applicable.' },
+  { cat:'cm', q:'How are acute and chronic conditions coded when both are present?', a:'Per ICD-10-CM guidelines, sequence the acute condition first. If a combination code exists for both, use the combination code rather than two separate codes.' },
+  { cat:'cm', q:'What is the guideline for coding "possible" or "probable" diagnoses in inpatient coding?', a:'For inpatient coding, code the condition as confirmed if the physician documents it as "possible," "probable," "suspected," or "likely." This differs from outpatient coding where only confirmed diagnoses are coded.' },
+  { cat:'cm', q:'What are the Official Guidelines for coding pressure ulcers?', a:'Code the site AND the stage. If a patient is admitted with a stage 2 ulcer that progresses to stage 3, code the highest stage at discharge. Unstageable ulcers get code L89._ _0.' },
+  { cat:'cm', q:'How should pain be coded when it is documented as a reason for admission and the underlying cause is also known?', a:'Per Section I.C.6, code the underlying condition first. Code pain as additional only if it is not routinely associated with the disease process and provides added specificity.' },
+  { cat:'cm', q:'What is the UHDDS definition of "Other Diagnoses" for inpatient reporting?', a:'All conditions that coexist at the time of admission, develop subsequently, or that affect the treatment received and/or the length of stay. Diagnoses that relate to an earlier episode with no bearing on the current stay are excluded.' },
+  { cat:'cm', q:'When should a Z code for history of a condition be used vs. an active disease code?', a:'Use a Z history code only when the condition no longer exists and is not being actively treated. If the condition is current and affects care, code the active condition.' },
+  // DRG / MS-DRG
+  { cat:'drg', q:'What is the difference between a CC and an MCC in the MS-DRG system?', a:'CC (Complication/Comorbidity) and MCC (Major Complication/Comorbidity) are diagnoses that, when present, increase the resource intensity of the DRG. MCCs have a greater impact and generate higher reimbursement. Both must be documented and coded as conditions present during the inpatient stay.' },
+  { cat:'drg', q:'How many MDCs (Major Diagnostic Categories) are in the MS-DRG system, and what are they based on?', a:'There are 25 MDCs. They are primarily based on body systems and organ systems, roughly corresponding to clinical specialties. MDC assignment is determined by the principal diagnosis.' },
+  { cat:'drg', q:'What happens to DRG assignment if a CC or MCC is determined to be a manifestation that is integral to the principal diagnosis?', a:'If the CC/MCC is routinely associated with the principal diagnosis or is a manifestation, it is excluded from the CC/MCC list and will not affect DRG assignment. This is called the CC Exclusion List.' },
+  { cat:'drg', q:'What is a "surgical DRG" and when does it apply?', a:'A surgical DRG is assigned when a patient has a qualifying OR procedure during the inpatient stay. Surgical DRGs generally have higher relative weights (and reimbursement) than medical DRGs within the same MDC.' },
+  { cat:'drg', q:'What is the Hospital-Acquired Condition (HAC) payment provision?', a:'CMS will not pay additional reimbursement for certain preventable conditions (HACs) that were not present on admission (POA = N). These are conditions considered "reasonably preventable" through the application of evidence-based guidelines.' },
+  { cat:'drg', q:'What does "relative weight" mean in the context of DRGs?', a:'The relative weight (RW) is a number assigned to each DRG that reflects the average resource consumption compared to the average Medicare patient. A DRG with RW of 2.0 costs roughly twice the average. Payment = RW × Hospital Base Rate.' },
+  // POA
+  { cat:'poa', q:'What is the official definition of Present on Admission (POA)?', a:'A condition is considered POA if it is present at the time the order for inpatient admission occurs. This includes conditions that developed during outpatient encounters (ED, observation, outpatient surgery) that occurred prior to the admission order.' },
+  { cat:'poa', q:'A patient has hypertension listed in the H&P but it is not being treated during this admission. What POA indicator applies?', a:'Y — Present on Admission. Chronic conditions that exist, even if not actively being treated, are considered POA if they were present at the time of admission.' },
+  { cat:'poa', q:'A patient develops a C. diff infection on day 5 of their inpatient stay. What is the POA indicator and what are the implications?', a:'POA = N. C. diff (CDI) is on the CMS HAC list. Since it was not present on admission, Medicare will not adjust payment upward to account for this diagnosis. It also may not be coded as an MCC for DRG purposes.' },
+  { cat:'poa', q:'A stage II pressure ulcer is found on the admission skin assessment. What is the POA indicator?', a:'Y. A condition found on physical examination at the time of admission is considered POA. Document clearly in the H&P or nursing admission assessment.' },
+  { cat:'poa', q:'What is the POA indicator for an external cause code (V/W/X/Y code)?', a:'1 (formerly E) — Exempt from POA reporting. External cause codes are always considered POA by nature and do not require a Y/N/W/U designation.' },
+  { cat:'poa', q:'How should a coder handle a condition where the physician documents "new onset" but the timing relative to admission is clinically unclear?', a:'Assign POA = W (Clinically Undetermined) if the provider cannot determine whether the condition was POA based on the clinical presentation. Consider a physician query if the designation significantly affects reimbursement or quality metrics.' },
+  // Official Guidelines
+  { cat:'guidelines', q:'What is the Medicare 3-Day Payment Window Rule?', a:'Outpatient diagnostic services and admission-related non-diagnostic services furnished within 3 days prior to an inpatient admission must be bundled into the inpatient payment and cannot be billed separately under Medicare.' },
+  { cat:'guidelines', q:'What is the principal diagnosis selection rule when two conditions equally meet the definition?', a:'Per UHDDS/Official Guidelines, when two or more interrelated conditions each meet the definition of principal diagnosis, either may be sequenced as principal — unless there is a specific sequencing guideline that directs otherwise.' },
+  { cat:'guidelines', q:'How should you code a patient admitted for a chemotherapy complication (e.g., severe nausea)?', a:'Sequence the complication first, then the neoplasm, then Z51.11 (encounter for antineoplastic chemotherapy) as additional. The complication (not the chemo encounter) is the principal diagnosis.' },
+  { cat:'guidelines', q:'What is the guideline for coding sepsis as the principal diagnosis?', a:'Sepsis must be documented by the physician. When a patient is admitted with sepsis, code sepsis as the principal diagnosis. If sepsis develops after admission, it may be a secondary diagnosis or complication.' },
+  { cat:'guidelines', q:'How should a coder handle an admission for observation that converts to inpatient?', a:'Per guidelines, the date of inpatient admission becomes the date of service for the inpatient claim. Any services provided during the observation period prior to the formal admission order are considered outpatient and billed separately.' },
+  { cat:'guidelines', q:'What is the guideline for coding a patient with HIV admitted for an unrelated condition?', a:'Per Section I.C.1.a, always sequence the HIV disease code (B20) first when a patient with confirmed HIV is admitted for any condition, regardless of the reason for admission.' },
+  { cat:'guidelines', q:'When should combination codes be used vs. multiple codes?', a:'Per Official Guidelines, assign a combination code when it fully identifies the diagnostic conditions involved or when the classification provides a combination code that clearly identifies all elements. Multiple coding is used only when no combination code exists.' },
+  // Specialty
+  { cat:'specialty', q:'A TURP is performed. What ICD-10-PCS approach value applies, and why?', a:'Approach: 8 — Via Natural or Artificial Opening Endoscopic. The resectoscope is passed through the urethra (a natural body opening) and the surgeon visualizes using an endoscope. The prostatic tissue is excised (Root Operation: Excision, B).' },
+  { cat:'specialty', q:'For cataract surgery with IOL insertion, how many ICD-10-PCS codes are required?', a:'Typically two codes: (1) Replacement (R) for the crystalline lens with the synthetic IOL, and (2) if a separate phacoemulsification is performed, it may be included in the Replacement code. Verify the specific approach and device per PCS tables.' },
+  { cat:'specialty', q:'What is the correct ICD-10-PCS Root Operation for a laparoscopic radical nephrectomy?', a:'Resection (T) — cutting out or off, WITHOUT replacement, ALL of a body part. A radical nephrectomy removes the entire kidney. Approach: 4 — Percutaneous Endoscopic (laparoscopic).' },
+  { cat:'specialty', q:'A cochlear implant is placed. What is the Root Operation?', a:'Insertion (H) — putting in a nonbiological appliance that performs a physiological function. The cochlear implant is an electronic device; it does not replace the body part. Body part: Inner ear. Approach: 0 (Open).' },
+  { cat:'specialty', q:'For a tympanostomy tube insertion (69436), what ICD-10-PCS Root Operation and device apply?', a:'Root Operation: Insertion (H). Device: Drainage Device (0) — a ventilating tube is a drainage device in PCS. Approach: 7 — Via Natural or Artificial Opening (tympanic membrane accessed through ear canal). Qualifier: None (Z).' },
+  { cat:'specialty', q:'A patient undergoes a PCNL (percutaneous nephrostolithotomy). What is the Root Operation?', a:'Extirpation (C) — taking or cutting out solid matter from a body part. A stone is solid matter that is removed from the renal pelvis/ureter. Approach: 3 — Percutaneous.' },
+  { cat:'specialty', q:'What is the correct Root Operation for an intravitreal injection (e.g., anti-VEGF injection, code 67028)?', a:'Introduction (0) in the Administration section — introducing a therapeutic, prophylactic, protective, diagnostic, nutritional, or physiological substance. This is in the Administration section, not the Medical/Surgical section.' },
+  { cat:'specialty', q:'A functional endoscopic sinus surgery (FESS) involves opening the maxillary sinus and removing tissue. What Root Operation applies?', a:'Excision (B) — cutting out or off some of a body part. If the entire sinus mucosa/wall is removed, Resection (T) may apply. For FESS with tissue removal, Excision (B) with approach 8 (Via Natural or Artificial Opening Endoscopic) is typical.' },
+  { cat:'specialty', q:'What ICD-10-CM code category is used for complications of cataract surgery, such as posterior lens capsule rupture?', a:'Category H59 — Intraoperative and postprocedural complications and disorders of eye and adnexa. Specifically, H59.01x for intraoperative hemorrhage/hematoma during ophthalmic procedure.' },
+  { cat:'specialty', q:'A patient is admitted post-TURP with urinary retention. How should this be coded?', a:'Per Official Guidelines, if the retention is a complication of the TURP, use a postprocedural complication code (N99 category). If it is the underlying reason for the admission leading to the TURP, sequence accordingly. Documentation must specify "complication" vs. expected outcome.' },
+];
+
+let activeCards = [...allFlashcards];
+let currentIdx = 0;
+
+function renderCard() {
+  document.getElementById('flashcardContainer').classList.remove('flipped');
+  setTimeout(() => {
+    const card = activeCards[currentIdx];
+    document.getElementById('fcQuestion').innerText = card.q;
+    document.getElementById('fcAnswer').innerText = card.a;
+    document.getElementById('fcCategory').innerText = catLabel(card.cat);
+    document.getElementById('fcCategoryBack').innerText = catLabel(card.cat);
+    document.getElementById('fcCatLabel').innerText = catLabel(card.cat);
+    document.getElementById('fcCounter').innerText = `Card ${currentIdx + 1} of ${activeCards.length}`;
+    const pct = ((currentIdx + 1) / activeCards.length * 100).toFixed(0);
+    document.getElementById('fcProgressBar').style.width = pct + '%';
+  }, 180);
+}
+function catLabel(cat) {
+  return {pcs:'ICD-10-PCS',cm:'ICD-10-CM',drg:'DRG',poa:'POA',guidelines:'Guidelines',specialty:'Specialty'}[cat]||cat;
+}
+function flipCard() { document.getElementById('flashcardContainer').classList.toggle('flipped'); }
+function nextCard() { currentIdx = (currentIdx + 1) % activeCards.length; renderCard(); }
+function prevCard() { currentIdx = (currentIdx - 1 + activeCards.length) % activeCards.length; renderCard(); }
+function shuffleCards() {
+  for (let i = activeCards.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [activeCards[i], activeCards[j]] = [activeCards[j], activeCards[i]];
+  }
+  currentIdx = 0; renderCard();
+}
+function filterCards(btn, cat) {
+  document.querySelectorAll('.fc-filter').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeCards = cat === 'all' ? [...allFlashcards] : allFlashcards.filter(c => c.cat === cat);
+  currentIdx = 0; renderCard();
+}
+
+// ===== INIT =====
+updateUI();
+updateQueryForm();
+renderCard();
+</script>
 </body>
 </html>
