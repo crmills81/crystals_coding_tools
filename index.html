@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚕️</text></svg>">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MCW Inpatient Profee Toolkit</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
-  /* ===== DARK THEME (default) ===== */
+  /* ===== DARK THEME ===== */
   :root {
     --bg: #12111a;
     --surface: #1e1c2b;
@@ -31,7 +30,7 @@
                       radial-gradient(ellipse at 80% 80%, rgba(61,214,200,0.04) 0%, transparent 50%);
   }
 
-  /* ===== LIGHT THEME ===== */
+  /* ===== LIGHT THEME (default) ===== */
   :root.light {
     --bg: #f3f1f9;
     --surface: #ffffff;
@@ -789,6 +788,64 @@
   .log-btn:hover { border-color: var(--primary); color: var(--primary); }
   .log-btn.danger:hover { border-color: var(--red); color: var(--red); }
 
+  /* ===== DROPDOWN NAV ===== */
+  .nav-dropdown { position: relative; }
+  .nav-dropdown-btn {
+    color: var(--muted);
+    padding: 12px 14px;
+    text-decoration: none;
+    font-size: 0.82em;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    transition: color 0.2s, background 0.2s;
+    border-radius: 6px;
+    white-space: nowrap;
+    background: none;
+    border: none;
+    font-family: var(--font-main);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .nav-dropdown-btn:hover, .nav-dropdown-btn.active { color: var(--primary); background: var(--primary-glow); }
+  .nav-dropdown-btn .arrow { font-size: 0.7em; transition: transform 0.2s; }
+  .nav-dropdown:hover .arrow { transform: rotate(180deg); }
+  .nav-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    min-width: 200px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    z-index: 999;
+    overflow: hidden;
+  }
+  .nav-dropdown:hover .nav-dropdown-menu { display: block; }
+  .nav-dropdown-menu a {
+    display: block;
+    padding: 10px 16px;
+    font-size: 0.83em;
+    font-weight: 500;
+    color: var(--muted);
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+    border-radius: 0;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .nav-dropdown-menu a:hover { background: var(--primary-glow); color: var(--primary); }
+  .nav-dropdown-menu a.active { color: var(--primary); background: var(--primary-glow); font-weight: 700; }
+  .nav-dropdown-menu .menu-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 4px 0;
+  }
+  :root.light .nav-dropdown-menu { box-shadow: 0 8px 24px rgba(100,80,180,0.15); }
+
   /* ===== THEME TOGGLE ===== */
   .theme-toggle {
     margin-left: auto;
@@ -822,13 +879,85 @@
   :root.light .fc-front { background: var(--surface); }
   :root.light .navbar a.ext-link { color: var(--gold); }
 
-  @media (max-width: 520px) {
-    .poa-grid { grid-template-columns: 1fr; }
-    .poa-card.exempt { grid-column: 1; }
-    .flow-branches { grid-template-columns: 1fr; }
-    .navbar a { padding: 10px 9px; font-size: 0.76em; }
-    .nav-brand { display: none; }
-    .theme-toggle { padding: 7px 9px; }
+  /* ===== CC/MCC LOOKUP ===== */
+  .ccmcc-search-row { display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
+  .ccmcc-search-row input { flex:1; min-width:180px; }
+  .ccmcc-filter-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+  .ccmcc-table { width:100%; border-collapse:collapse; font-size:0.84em; }
+  .ccmcc-table th { text-align:left; padding:8px 12px; font-size:0.7em; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); border-bottom:2px solid var(--border); }
+  .ccmcc-table td { padding:8px 12px; border-bottom:1px solid var(--border); vertical-align:middle; }
+  .ccmcc-table tr.hidden { display:none; }
+  .ccmcc-table tr:hover td { background:rgba(163,116,247,0.04); }
+  .ccmcc-table tr:last-child td { border-bottom:none; }
+  .ccmcc-badge { display:inline-block; font-size:0.72em; font-weight:800; letter-spacing:0.06em; padding:3px 9px; border-radius:10px; white-space:nowrap; }
+  .ccmcc-badge.mcc  { background:rgba(163,116,247,0.15); color:var(--primary); border:1px solid rgba(163,116,247,0.4); }
+  .ccmcc-badge.cc   { background:rgba(61,214,200,0.1);   color:var(--teal);    border:1px solid rgba(61,214,200,0.35); }
+  .ccmcc-badge.none { background:var(--surface2);         color:var(--muted);   border:1px solid var(--border); }
+  .ccmcc-badge.hac  { background:rgba(244,116,116,0.1);  color:var(--red);     border:1px solid rgba(244,116,116,0.35); margin-left:5px; }
+  .ccmcc-code { font-family:var(--font-mono); font-size:0.9em; color:var(--primary); white-space:nowrap; }
+
+  /* ===== CHECKLIST ===== */
+  .checklist-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px; }
+  .checklist-progress-text { font-size:0.82em; color:var(--muted); font-weight:600; }
+  .cl-section { margin-bottom:14px; }
+  .cl-section-title { font-size:0.72em; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; color:var(--primary); margin-bottom:8px; padding-bottom:5px; border-bottom:1px solid var(--border); }
+  .cl-item { display:flex; align-items:flex-start; gap:10px; padding:9px 12px; border-radius:7px; margin-bottom:5px; background:var(--surface2); border:1px solid var(--border); transition:all 0.2s; cursor:pointer; }
+  .cl-item:hover { border-color:var(--primary); }
+  .cl-item.checked { background:rgba(163,116,247,0.08); border-color:rgba(163,116,247,0.35); }
+  .cl-item.checked .cl-text { color:var(--muted); text-decoration:line-through; }
+  .cl-checkbox { width:18px; height:18px; border-radius:4px; border:2px solid var(--border); flex-shrink:0; margin-top:1px; display:flex; align-items:center; justify-content:center; transition:all 0.2s; }
+  .cl-item.checked .cl-checkbox { background:var(--primary); border-color:var(--primary); }
+  .cl-checkmark { color:white; font-size:0.8em; font-weight:700; display:none; }
+  .cl-item.checked .cl-checkmark { display:block; }
+  .cl-text { font-size:0.88em; line-height:1.45; color:var(--text); }
+  .cl-note { font-size:0.76em; color:var(--muted); margin-top:2px; font-style:italic; }
+  .cl-flag { display:inline-block; font-size:0.68em; font-weight:700; padding:1px 6px; border-radius:4px; margin-left:6px; background:rgba(232,197,71,0.1); color:var(--gold); border:1px solid rgba(232,197,71,0.3); vertical-align:middle; }
+  .cl-flag.red { background:rgba(244,116,116,0.1); color:var(--red); border-color:rgba(244,116,116,0.3); }
+
+  /* ===== TEACHING PHYSICIAN ===== */
+  .tp-scenario { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:12px; border-left:4px solid var(--primary); }
+  .tp-scenario.warning { border-left-color:var(--gold); }
+  .tp-scenario.danger  { border-left-color:var(--red); }
+  .tp-scenario.teal    { border-left-color:var(--teal); }
+  .tp-scenario-title { font-weight:700; font-size:0.95em; color:var(--text); margin-bottom:6px; }
+  .tp-scenario.warning .tp-scenario-title { color:var(--gold); }
+  .tp-scenario.danger .tp-scenario-title  { color:var(--red); }
+  .tp-scenario.teal .tp-scenario-title    { color:var(--teal); }
+  .tp-scenario p { font-size:0.84em; color:var(--muted); line-height:1.55; margin-bottom:6px; }
+  .tp-scenario p:last-child { margin-bottom:0; }
+  .tp-rule-box { background:var(--primary-glow); border:1px solid rgba(163,116,247,0.3); border-radius:8px; padding:14px 16px; margin-bottom:14px; font-size:0.86em; line-height:1.6; }
+  .tp-rule-box strong { color:var(--primary); }
+
+  /* ===== GLOBAL SURGERY ===== */
+  .global-badge { display:inline-block; font-family:var(--font-mono); font-weight:700; font-size:0.88em; padding:3px 10px; border-radius:6px; white-space:nowrap; }
+  .global-badge.g090 { background:rgba(244,116,116,0.12); color:var(--red); border:1px solid rgba(244,116,116,0.35); }
+  .global-badge.g010 { background:rgba(232,197,71,0.10); color:var(--gold); border:1px solid rgba(232,197,71,0.35); }
+  .global-badge.g000 { background:rgba(61,214,200,0.08); color:var(--teal); border:1px solid rgba(61,214,200,0.3); }
+  .global-badge.gMMM { background:rgba(163,116,247,0.12); color:var(--primary); border:1px solid rgba(163,116,247,0.3); }
+  .global-mod-chip { display:inline-block; font-family:var(--font-mono); font-size:0.78em; font-weight:600; padding:2px 6px; border-radius:4px; background:var(--surface2); border:1px solid var(--border); color:var(--muted); margin:2px; }
+
+  /* ===== NCCI ===== */
+  .ncci-pair { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px 16px; margin-bottom:10px; }
+  .ncci-pair.hidden { display:none; }
+  .ncci-codes { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:6px; }
+  .ncci-col-code { font-family:var(--font-mono); font-weight:700; font-size:1.05em; color:var(--primary); }
+  .ncci-plus { color:var(--muted); font-size:1.1em; }
+  .ncci-bundled-code { font-family:var(--font-mono); font-weight:600; font-size:0.95em; color:var(--teal); }
+  .ncci-desc { font-size:0.84em; color:var(--muted); line-height:1.5; margin-bottom:5px; }
+  .ncci-modifier { display:inline-block; font-size:0.75em; font-weight:700; padding:2px 8px; border-radius:10px; }
+  .ncci-modifier.allowed   { background:rgba(61,214,200,0.1); color:var(--teal); border:1px solid rgba(61,214,200,0.35); }
+  .ncci-modifier.notallowed{ background:rgba(244,116,116,0.1); color:var(--red); border:1px solid rgba(244,116,116,0.35); }
+  .ncci-specialty-tag { display:inline-block; font-size:0.68em; font-weight:700; padding:1px 6px; border-radius:4px; background:var(--surface2); color:var(--muted); border:1px solid var(--border); margin-left:6px; }
+
+  @media (max-width:520px) {
+    .poa-grid { grid-template-columns:1fr; }
+    .poa-card.exempt { grid-column:1; }
+    .flow-branches { grid-template-columns:1fr; }
+    .navbar a { padding:10px 9px; font-size:0.76em; }
+    .nav-brand { display:none; }
+    .theme-toggle { padding:7px 9px; }
+    .nav-dropdown-btn { padding:10px 9px; font-size:0.76em; }
+    .ccmcc-search-row { flex-direction:column; }
   }
 </style>
 </head>
@@ -836,14 +965,49 @@
 
 <nav class="navbar">
   <span class="nav-brand">MCW // PROFEE</span>
-  <a class="nav-link active" onclick="showPage(event,'pg-inpatient')">Inpatient</a>
-  <a class="nav-link" onclick="showPage(event,'pg-ed')">ED</a>
-  <a class="nav-link" onclick="showPage(event,'pg-modifiers')">Modifiers</a>
-  <a class="nav-link" onclick="showPage(event,'pg-specialty')">Specialty CPT</a>
-  <a class="nav-link" onclick="showPage(event,'pg-poa')">POA</a>
-  <a class="nav-link" onclick="showPage(event,'pg-2mid')">2-Midnight</a>
-  <a class="nav-link" onclick="showPage(event,'pg-query')">Query Gen</a>
-  <a class="nav-link" onclick="showPage(event,'pg-flash')">Flashcards</a>
+
+  <!-- Calculators -->
+  <div class="nav-dropdown">
+    <button class="nav-dropdown-btn" id="grp-calc">Calculators <span class="arrow">▾</span></button>
+    <div class="nav-dropdown-menu">
+      <a class="nav-link" onclick="showPage(event,'pg-inpatient')">Inpatient E/M</a>
+      <a class="nav-link" onclick="showPage(event,'pg-ed')">Emergency Dept</a>
+    </div>
+  </div>
+
+  <!-- Reference -->
+  <div class="nav-dropdown">
+    <button class="nav-dropdown-btn" id="grp-ref">Reference <span class="arrow">▾</span></button>
+    <div class="nav-dropdown-menu">
+      <a class="nav-link" onclick="showPage(event,'pg-modifiers')">Modifiers</a>
+      <a class="nav-link" onclick="showPage(event,'pg-specialty')">Specialty CPT</a>
+      <a class="nav-link" onclick="showPage(event,'pg-poa')">POA Indicators</a>
+      <a class="nav-link" onclick="showPage(event,'pg-2mid')">2-Midnight Rule</a>
+      <div class="menu-divider"></div>
+      <a class="nav-link" onclick="showPage(event,'pg-global')">Global Surgery Periods</a>
+      <a class="nav-link" onclick="showPage(event,'pg-tp')">Teaching Physician Rules</a>
+    </div>
+  </div>
+
+  <!-- Tools -->
+  <div class="nav-dropdown">
+    <button class="nav-dropdown-btn" id="grp-tools">Tools <span class="arrow">▾</span></button>
+    <div class="nav-dropdown-menu">
+      <a class="nav-link" onclick="showPage(event,'pg-ccmcc')">CC/MCC Lookup</a>
+      <a class="nav-link" onclick="showPage(event,'pg-ncci')">NCCI Bundling</a>
+      <a class="nav-link" onclick="showPage(event,'pg-query')">Query Generator</a>
+      <a class="nav-link" onclick="showPage(event,'pg-checklist')">Abstracting Checklist</a>
+    </div>
+  </div>
+
+  <!-- Study -->
+  <div class="nav-dropdown">
+    <button class="nav-dropdown-btn" id="grp-study">Study <span class="arrow">▾</span></button>
+    <div class="nav-dropdown-menu">
+      <a class="nav-link" onclick="showPage(event,'pg-flash')">CIC Flashcards</a>
+    </div>
+  </div>
+
   <a class="nav-link ext-link" href="https://crmills81.github.io/MCW_Coder_Hub/" target="_blank">MCW Hub ↗</a>
   <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn"><span class="toggle-icon">☀️</span> Light</button>
 </nav>
@@ -1391,6 +1555,222 @@
     <span id="fcCounter">Card 1 of 50</span>
     <span id="fcCatLabel" style="color:var(--primary); font-weight:600;"></span>
   </div>
+</div>
+
+<!-- ==================== CC/MCC LOOKUP ==================== -->
+<div id="pg-ccmcc" class="page-view">
+  <h1 class="page-title">CC / MCC Lookup Tool</h1>
+  <p class="page-subtitle">Search 200+ diagnoses — MCC, CC, Non-CC &amp; HAC flags included</p>
+  <div class="ccmcc-search-row">
+    <input type="text" id="ccmccSearch" onkeyup="filterCCMCC()" placeholder="Search diagnosis or ICD-10-CM code…">
+  </div>
+  <div class="ccmcc-filter-row">
+    <button class="filter-btn active" onclick="ccmccFilter(this,'all')">All</button>
+    <button class="filter-btn" onclick="ccmccFilter(this,'MCC')">MCC Only</button>
+    <button class="filter-btn" onclick="ccmccFilter(this,'CC')">CC Only</button>
+    <button class="filter-btn" onclick="ccmccFilter(this,'Non-CC')">Non-CC</button>
+    <button class="filter-btn" onclick="ccmccFilter(this,'HAC')">HAC-Listed</button>
+    <button class="filter-btn" onclick="ccmccFilter(this,'uro')">🫘 Urology</button>
+    <button class="filter-btn" onclick="ccmccFilter(this,'oph')">👁 Ophthalmology</button>
+    <button class="filter-btn" onclick="ccmccFilter(this,'oto')">👂 OTO</button>
+  </div>
+  <div class="card" style="padding:0; overflow:hidden;">
+    <table class="ccmcc-table">
+      <thead><tr><th>ICD-10-CM</th><th>Diagnosis</th><th>Status</th><th>Category</th></tr></thead>
+      <tbody id="ccmccBody"></tbody>
+    </table>
+  </div>
+  <div id="ccmccCount" style="text-align:center; color:var(--muted); font-size:0.82em; margin-top:10px; padding:6px;"></div>
+</div>
+
+<!-- ==================== ABSTRACTING CHECKLIST ==================== -->
+<div id="pg-checklist" class="page-view">
+  <h1 class="page-title">Abstracting Case Checklist</h1>
+  <p class="page-subtitle">Interactive per-encounter checklist — tick off each step as you work through a chart</p>
+
+  <div class="card">
+    <div class="checklist-header">
+      <div>
+        <label class="field-label" style="margin-bottom:4px;">Patient / Account Reference</label>
+        <input type="text" id="clPatient" placeholder="e.g., MRN 123456 / Smith, J / DOS 03-10" style="max-width:340px;">
+      </div>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <div class="checklist-progress-text" id="clProgressText">0 / 0 complete</div>
+        <button class="btn-secondary" onclick="resetChecklist()" style="padding:7px 14px; font-size:0.78em;">Reset</button>
+      </div>
+    </div>
+    <div class="fc-progress"><div class="fc-progress-bar" id="clProgressBar" style="width:0%"></div></div>
+  </div>
+
+  <div id="clSections"></div>
+
+  <div class="card" style="margin-top:4px; background:rgba(163,116,247,0.06); border-color:rgba(163,116,247,0.25);">
+    <div class="card-label">Session Notes</div>
+    <textarea id="clNotes" placeholder="Add case-specific notes, pending queries, issues to follow up…" style="min-height:90px; margin-top:6px;"></textarea>
+  </div>
+</div>
+
+<!-- ==================== TEACHING PHYSICIAN RULES ==================== -->
+<div id="pg-tp" class="page-view">
+  <h1 class="page-title">Teaching Physician Rules</h1>
+  <p class="page-subtitle">Medicare billing requirements for attending physicians in teaching settings — critical for MCW</p>
+
+  <div class="tp-rule-box">
+    <strong>Core Rule:</strong> A teaching physician may bill Medicare for services rendered by a resident only if the teaching physician was <strong>present during the key portion</strong> of the service and documents their participation. Modifier <strong>GC</strong> must be appended.
+  </div>
+
+  <div class="card">
+    <div class="card-label">E/M Services — Teaching Physician Requirements</div>
+
+    <div class="tp-scenario">
+      <div class="tp-scenario-title">Standard Teaching Physician Rule</div>
+      <p>The teaching physician must be present during the portion of the service that determines the level of care — i.e., the history, exam, and/or medical decision making. The resident may perform other portions without the teaching physician present.</p>
+      <p><strong>Documentation required:</strong> Teaching physician must document their own note or co-sign the resident's note with a statement confirming presence and participation (e.g., "I was present with the resident during the history and exam and agree with the assessment and plan.").</p>
+    </div>
+
+    <div class="tp-scenario teal">
+      <div class="tp-scenario-title">Primary Care Exception (PCE)</div>
+      <p>In approved primary care centers, the teaching physician need NOT be present during the key portion for <strong>99202–99203 and 99212–99213 only</strong> (low-level E/M). The teaching physician must be in the same area and immediately available, and must review the case with the resident.</p>
+      <p><strong>MCW Note:</strong> Verify whether your specific department/clinic is an approved PCE site. This exception does NOT apply to inpatient settings.</p>
+    </div>
+
+    <div class="tp-scenario warning">
+      <div class="tp-scenario-title">Time-Based Billing in Teaching Settings</div>
+      <p>When billing by time, only the time the <strong>teaching physician personally spent</strong> with the patient or performing activities on the date of service counts. Resident time may NOT be combined with teaching physician time for Medicare billing purposes.</p>
+      <p><strong>Exception:</strong> When the teaching physician and resident are both present together with the patient, that shared time counts fully.</p>
+    </div>
+
+    <div class="tp-scenario danger">
+      <div class="tp-scenario-title">⚠ Common Audit Risks</div>
+      <p>• Teaching physician signs/co-signs without adding their own documentation of presence and participation<br>
+      • Billing high-level E/M based on resident's note alone<br>
+      • Using resident's time for time-based billing<br>
+      • Missing GC modifier on claims<br>
+      • Teaching physician physically absent during key portion of service</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Surgical / Procedural Services</div>
+    <div class="tp-scenario">
+      <div class="tp-scenario-title">Teaching Physician Must Be Present During Entire Procedure</div>
+      <p>For surgical and invasive procedures, the teaching physician must be present during the <strong>entire procedure</strong> — not just a critical portion. The teaching physician may not bill for two overlapping procedures simultaneously unless the concurrent surgery rules are met.</p>
+    </div>
+    <div class="tp-scenario teal">
+      <div class="tp-scenario-title">Overlapping / Concurrent Surgeries</div>
+      <p>A teaching physician may be involved in two overlapping procedures only if: (1) the teaching physician is present during critical portions of both, (2) the teaching physician is immediately available for the non-critical portions, and (3) a qualified resident is present during non-critical portions.</p>
+      <p><strong>Cannot bill two simultaneous procedures at the same time</strong> unless the above criteria are fully met and documented.</p>
+    </div>
+    <div class="tp-scenario warning">
+      <div class="tp-scenario-title">Modifier GC vs GE</div>
+      <p><strong>GC</strong> — Service performed in part by a resident under the direction of a teaching physician. Use on claims when teaching physician was present and supervised resident participation per standard rule.</p>
+      <p><strong>GE</strong> — Service performed by a resident without the presence of a teaching physician under the primary care exception. Only valid in approved PCE settings for qualifying E/M levels.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Documentation Checklist — Teaching Physician Note</div>
+    <table class="cpt-table">
+      <thead><tr><th>REQUIRED ELEMENT</th><th>ACCEPTABLE LANGUAGE</th></tr></thead>
+      <tbody>
+        <tr><td>Presence during key portion</td><td>"I was present with Dr. [Resident] during the history, examination, and discussion of the plan."</td></tr>
+        <tr><td>Agreement with assessment/plan</td><td>"I have reviewed the resident's note and agree with the assessment and plan as documented."</td></tr>
+        <tr><td>Own medical decision making</td><td>Teaching physician adds their own A/P or explicitly affirms the resident's A/P with personal elaboration.</td></tr>
+        <tr><td>Modifier GC on claim</td><td>Must be appended to all E/M and procedure codes billed under the teaching physician rule.</td></tr>
+        <tr><td>Independent documentation for procedures</td><td>Teaching physician must document their presence for the entire procedure — resident's operative note alone is insufficient.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Resident Supervision Levels (CMS)</div>
+    <table class="cpt-table">
+      <thead><tr><th>LEVEL</th><th>DEFINITION</th><th>TEACHING PHYSICIAN LOCATION</th></tr></thead>
+      <tbody>
+        <tr><td style="font-weight:700; color:var(--primary)">Direct</td><td>Teaching physician physically present in room during service</td><td>In the room with patient and resident</td></tr>
+        <tr><td style="font-weight:700; color:var(--teal)">Personal</td><td>Teaching physician provides service themselves (no resident billing)</td><td>N/A — not a resident encounter</td></tr>
+        <tr><td style="font-weight:700; color:var(--gold)">General</td><td>Overall supervision; teaching physician available but not present</td><td>Immediately available in facility/clinic</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ==================== GLOBAL SURGERY PERIODS ==================== -->
+<div id="pg-global" class="page-view">
+  <h1 class="page-title">Global Surgery Period Guide</h1>
+  <p class="page-subtitle">0 / 10 / 90-day global periods with modifier rules &amp; common CPT reference</p>
+
+  <div class="card">
+    <div class="card-label">Global Period Definitions</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-top:6px;">
+      <div style="background:rgba(244,116,116,0.08); border:1px solid rgba(244,116,116,0.3); border-radius:8px; padding:14px; text-align:center;">
+        <div style="font-family:var(--font-mono); font-size:1.8em; font-weight:700; color:var(--red);">090</div>
+        <div style="font-weight:700; margin:4px 0; font-size:0.9em;">Major Surgery</div>
+        <div style="font-size:0.78em; color:var(--muted); line-height:1.5;">Preop: 1 day before<br>Postop: 90 days after<br>All routine follow-up bundled</div>
+      </div>
+      <div style="background:rgba(232,197,71,0.08); border:1px solid rgba(232,197,71,0.3); border-radius:8px; padding:14px; text-align:center;">
+        <div style="font-family:var(--font-mono); font-size:1.8em; font-weight:700; color:var(--gold);">010</div>
+        <div style="font-weight:700; margin:4px 0; font-size:0.9em;">Minor Surgery</div>
+        <div style="font-size:0.78em; color:var(--muted); line-height:1.5;">Preop: Day of surgery<br>Postop: 10 days after<br>Follow-up bundled</div>
+      </div>
+      <div style="background:rgba(61,214,200,0.07); border:1px solid rgba(61,214,200,0.3); border-radius:8px; padding:14px; text-align:center;">
+        <div style="font-family:var(--font-mono); font-size:1.8em; font-weight:700; color:var(--teal);">000</div>
+        <div style="font-weight:700; margin:4px 0; font-size:0.9em;">Endoscopic / Minor</div>
+        <div style="font-size:0.78em; color:var(--muted); line-height:1.5;">Preop: Day of procedure<br>No postop period<br>Same-day follow-up bundled</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Modifier Rules by Global Period</div>
+    <table class="cpt-table">
+      <thead><tr><th>MODIFIER</th><th>USE CASE</th><th>APPLIES TO</th></tr></thead>
+      <tbody>
+        <tr><td><span class="global-mod-chip">57</span></td><td>Decision for surgery — E/M on day of or day before major surgery</td><td>Global 090 only</td></tr>
+        <tr><td><span class="global-mod-chip">25</span></td><td>Significant, separately identifiable E/M same day as minor procedure</td><td>Global 000 / 010</td></tr>
+        <tr><td><span class="global-mod-chip">24</span></td><td>Unrelated E/M during postoperative period</td><td>All globals during post-op</td></tr>
+        <tr><td><span class="global-mod-chip">58</span></td><td>Staged or related procedure during post-op period (planned)</td><td>All globals</td></tr>
+        <tr><td><span class="global-mod-chip">78</span></td><td>Unplanned return to OR for related procedure during post-op</td><td>All globals — intraop only paid</td></tr>
+        <tr><td><span class="global-mod-chip">79</span></td><td>Unrelated procedure during post-op period — new global begins</td><td>All globals</td></tr>
+        <tr><td><span class="global-mod-chip">76</span></td><td>Repeat procedure by same physician</td><td>All globals</td></tr>
+        <tr><td><span class="global-mod-chip">77</span></td><td>Repeat procedure by different physician</td><td>All globals</td></tr>
+        <tr><td><span class="global-mod-chip">54</span></td><td>Surgical care only — splits global (surgeon does not follow postop)</td><td>Global 090</td></tr>
+        <tr><td><span class="global-mod-chip">55</span></td><td>Postoperative management only</td><td>Global 090</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Common CPT — Global Period Reference</div>
+    <div class="mod-search-box" style="margin-bottom:12px;">
+      <span class="search-icon">⌕</span>
+      <input type="text" id="globalSearch" onkeyup="filterGlobal()" placeholder="Search by CPT code or procedure name…">
+    </div>
+    <table class="cpt-table" id="globalTable">
+      <thead><tr><th>CPT</th><th>Procedure</th><th>Global</th><th>Specialty</th></tr></thead>
+      <tbody id="globalBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ==================== NCCI BUNDLING ==================== -->
+<div id="pg-ncci" class="page-view">
+  <h1 class="page-title">NCCI Bundling Reference</h1>
+  <p class="page-subtitle">Common edit pairs for Urology, Ophthalmology &amp; OTO — with modifier override status</p>
+
+  <div class="note" style="margin-bottom:16px;">NCCI (National Correct Coding Initiative) edits prevent improper payment when two codes are reported together that represent overlapping work. Column 1 is the payable code; Column 2 is the component that is bundled into it. Always verify current edits in the official CMS NCCI tables — these represent commonly encountered pairs.</div>
+
+  <div class="ccmcc-search-row">
+    <input type="text" id="ncciSearch" onkeyup="filterNcci()" placeholder="Search by CPT code or keyword…">
+  </div>
+  <div class="ccmcc-filter-row">
+    <button class="filter-btn active" onclick="ncciFilter(this,'all')">All Specialties</button>
+    <button class="filter-btn" onclick="ncciFilter(this,'uro')">🫘 Urology</button>
+    <button class="filter-btn" onclick="ncciFilter(this,'oph')">👁 Ophthalmology</button>
+    <button class="filter-btn" onclick="ncciFilter(this,'oto')">👂 OTO</button>
+    <button class="filter-btn" onclick="ncciFilter(this,'gen')">General</button>
+  </div>
+  <div id="ncciList"></div>
 </div>
 
 </div><!-- /container -->
@@ -2916,11 +3296,446 @@ function filterCards(btn, cat) {
   currentIdx = 0; renderCard();
 }
 
+// ===== UPDATED showPage — highlights correct dropdown group =====
+function showPage(event, pageId) {
+  if (event.target.classList.contains('ext-link')) return;
+  document.querySelectorAll('.page-view').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(a => a.classList.remove('active'));
+  document.querySelectorAll('.nav-dropdown-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(pageId).classList.add('active');
+  event.target.classList.add('active');
+  // highlight parent dropdown group
+  const groupMap = {
+    'pg-inpatient':'grp-calc','pg-ed':'grp-calc',
+    'pg-modifiers':'grp-ref','pg-specialty':'grp-ref','pg-poa':'grp-ref','pg-2mid':'grp-ref','pg-global':'grp-ref','pg-tp':'grp-ref',
+    'pg-ccmcc':'grp-tools','pg-ncci':'grp-tools','pg-query':'grp-tools','pg-checklist':'grp-tools',
+    'pg-flash':'grp-study'
+  };
+  const grp = groupMap[pageId];
+  if (grp) document.getElementById(grp)?.classList.add('active');
+}
+
+// ===== CC/MCC DATA =====
+const ccmccData = [
+  // MCC — General
+  {code:'A41.9',  dx:'Sepsis, unspecified organism',                     status:'MCC', cat:'gen',  hac:false},
+  {code:'A41.51', dx:'Sepsis due to Escherichia coli',                   status:'MCC', cat:'gen',  hac:false},
+  {code:'A41.01', dx:'Sepsis due to MRSA',                               status:'MCC', cat:'gen',  hac:true},
+  {code:'A41.02', dx:'Sepsis due to MSSA',                               status:'MCC', cat:'gen',  hac:false},
+  {code:'R65.21', dx:'Severe sepsis with septic shock',                  status:'MCC', cat:'gen',  hac:false},
+  {code:'R65.20', dx:'Severe sepsis without septic shock',               status:'MCC', cat:'gen',  hac:false},
+  {code:'J96.00', dx:'Acute respiratory failure, unspecified',           status:'MCC', cat:'gen',  hac:false},
+  {code:'J96.01', dx:'Acute respiratory failure with hypoxia',           status:'MCC', cat:'gen',  hac:false},
+  {code:'J96.02', dx:'Acute respiratory failure with hypercapnia',       status:'MCC', cat:'gen',  hac:false},
+  {code:'J96.20', dx:'Acute and chronic respiratory failure, unspecified',status:'MCC',cat:'gen',  hac:false},
+  {code:'G93.41', dx:'Metabolic encephalopathy',                         status:'MCC', cat:'gen',  hac:false},
+  {code:'G93.49', dx:'Other encephalopathy',                             status:'MCC', cat:'gen',  hac:false},
+  {code:'F05',    dx:'Delirium due to known physiological condition',    status:'CC',  cat:'gen',  hac:false},
+  {code:'N17.9',  dx:'Acute kidney failure, unspecified',                status:'MCC', cat:'gen',  hac:false},
+  {code:'N17.0',  dx:'Acute kidney failure with tubular necrosis (ATN)', status:'MCC', cat:'gen',  hac:false},
+  {code:'N17.1',  dx:'Acute kidney failure with acute cortical necrosis',status:'MCC', cat:'gen',  hac:false},
+  {code:'E43',    dx:'Unspecified severe protein-calorie malnutrition',  status:'MCC', cat:'gen',  hac:false},
+  {code:'E41',    dx:'Nutritional marasmus',                             status:'MCC', cat:'gen',  hac:false},
+  {code:'E40',    dx:'Kwashiorkor',                                      status:'MCC', cat:'gen',  hac:false},
+  {code:'E44.0',  dx:'Moderate protein-calorie malnutrition',            status:'CC',  cat:'gen',  hac:false},
+  {code:'E44.1',  dx:'Mild protein-calorie malnutrition',                status:'CC',  cat:'gen',  hac:false},
+  {code:'I50.21', dx:'Acute systolic (congestive) heart failure',        status:'MCC', cat:'gen',  hac:false},
+  {code:'I50.23', dx:'Acute on chronic systolic heart failure',          status:'MCC', cat:'gen',  hac:false},
+  {code:'I50.31', dx:'Acute diastolic (congestive) heart failure',       status:'MCC', cat:'gen',  hac:false},
+  {code:'I50.33', dx:'Acute on chronic diastolic heart failure',         status:'MCC', cat:'gen',  hac:false},
+  {code:'I50.41', dx:'Acute combined systolic and diastolic HF',         status:'MCC', cat:'gen',  hac:false},
+  {code:'I50.43', dx:'Acute on chronic combined systolic/diastolic HF',  status:'MCC', cat:'gen',  hac:false},
+  {code:'I50.22', dx:'Chronic systolic heart failure',                   status:'CC',  cat:'gen',  hac:false},
+  {code:'I50.32', dx:'Chronic diastolic heart failure',                  status:'CC',  cat:'gen',  hac:false},
+  {code:'I26.09', dx:'Other pulmonary embolism with acute cor pulmonale',status:'MCC', cat:'gen',  hac:false},
+  {code:'I26.99', dx:'Other pulmonary embolism without acute cor pulmonale',status:'CC',cat:'gen', hac:false},
+  {code:'I82.401',dx:'Acute DVT of unspecified deep vein, right leg',    status:'CC',  cat:'gen',  hac:false},
+  {code:'I82.402',dx:'Acute DVT of unspecified deep vein, left leg',     status:'CC',  cat:'gen',  hac:false},
+  {code:'D62',    dx:'Acute posthemorrhagic anemia',                     status:'CC',  cat:'gen',  hac:false},
+  {code:'D50.0',  dx:'Iron deficiency anemia secondary to blood loss',   status:'CC',  cat:'gen',  hac:false},
+  {code:'D63.0',  dx:'Anemia in neoplastic disease',                     status:'CC',  cat:'gen',  hac:false},
+  {code:'D64.81', dx:'Anemia due to antineoplastic chemotherapy',        status:'CC',  cat:'gen',  hac:false},
+  {code:'J18.9',  dx:'Pneumonia, unspecified organism',                  status:'CC',  cat:'gen',  hac:false},
+  {code:'J15.1',  dx:'Pneumonia due to Pseudomonas',                     status:'MCC', cat:'gen',  hac:false},
+  {code:'J15.212',dx:'Pneumonia due to MRSA',                            status:'MCC', cat:'gen',  hac:true},
+  {code:'K92.1',  dx:'Melena',                                           status:'CC',  cat:'gen',  hac:false},
+  {code:'K92.0',  dx:'Hematemesis',                                      status:'CC',  cat:'gen',  hac:false},
+  {code:'K57.21', dx:'Diverticulitis of small intestine with perforation',status:'MCC',cat:'gen',  hac:false},
+  {code:'K65.0',  dx:'Generalized (acute) peritonitis',                  status:'MCC', cat:'gen',  hac:false},
+  {code:'E11.65', dx:'Type 2 DM with hyperglycemia',                     status:'CC',  cat:'gen',  hac:false},
+  {code:'E11.641',dx:'Type 2 DM with hypoglycemia with coma',            status:'MCC', cat:'gen',  hac:false},
+  {code:'E87.1',  dx:'Hyponatremia',                                     status:'CC',  cat:'gen',  hac:false},
+  {code:'E86.0',  dx:'Dehydration',                                      status:'CC',  cat:'gen',  hac:false},
+  {code:'N18.4',  dx:'Chronic kidney disease, stage 4',                  status:'CC',  cat:'gen',  hac:false},
+  {code:'N18.5',  dx:'Chronic kidney disease, stage 5',                  status:'CC',  cat:'gen',  hac:false},
+  {code:'N18.6',  dx:'End-stage renal disease (ESRD)',                   status:'CC',  cat:'gen',  hac:false},
+  {code:'L89.153',dx:'Pressure ulcer of sacral region, stage 3',         status:'MCC', cat:'gen',  hac:true},
+  {code:'L89.154',dx:'Pressure ulcer of sacral region, stage 4',         status:'MCC', cat:'gen',  hac:true},
+  {code:'L89.213',dx:'Pressure ulcer of right hip, stage 3',             status:'MCC', cat:'gen',  hac:true},
+  {code:'L89.214',dx:'Pressure ulcer of right hip, stage 4',             status:'MCC', cat:'gen',  hac:true},
+  {code:'L89.152',dx:'Pressure ulcer of sacral region, stage 2',         status:'CC',  cat:'gen',  hac:true},
+  {code:'T80.211A',dx:'Bloodstream infection due to central venous catheter (CLABSI)',status:'MCC',cat:'gen',hac:true},
+  {code:'T83.511A',dx:'Infection of indwelling urinary catheter (CAUTI)',  status:'CC',  cat:'gen',  hac:true},
+  {code:'T81.40XA',dx:'Infection following a procedure, unspecified',    status:'CC',  cat:'gen',  hac:true},
+  {code:'I97.790',dx:'Other intraoperative cardiac arrest during cardiac surgery',status:'MCC',cat:'gen',hac:false},
+  {code:'G72.81', dx:'Critical illness myopathy',                        status:'CC',  cat:'gen',  hac:false},
+  // Urology
+  {code:'N13.0',  dx:'Hydronephrosis with ureteropelvic junction obstruction',status:'CC',cat:'uro',hac:false},
+  {code:'N13.1',  dx:'Hydronephrosis with ureteral stricture',           status:'CC',  cat:'uro',  hac:false},
+  {code:'N13.2',  dx:'Hydronephrosis with renal and ureteral calculous obstruction',status:'CC',cat:'uro',hac:false},
+  {code:'N20.0',  dx:'Calculus of kidney',                               status:'CC',  cat:'uro',  hac:false},
+  {code:'N20.1',  dx:'Calculus of ureter',                               status:'CC',  cat:'uro',  hac:false},
+  {code:'N20.2',  dx:'Calculus of kidney with calculus of ureter',       status:'CC',  cat:'uro',  hac:false},
+  {code:'N10',    dx:'Acute pyelonephritis',                             status:'CC',  cat:'uro',  hac:false},
+  {code:'N11.0',  dx:'Nonobstructive reflux-associated chronic pyelonephritis',status:'CC',cat:'uro',hac:false},
+  {code:'N39.0',  dx:'Urinary tract infection, site not specified',       status:'CC',  cat:'uro',  hac:false},
+  {code:'N21.0',  dx:'Calculus in bladder',                              status:'CC',  cat:'uro',  hac:false},
+  {code:'N32.0',  dx:'Bladder-neck obstruction',                         status:'CC',  cat:'uro',  hac:false},
+  {code:'N40.1',  dx:'Benign prostatic hyperplasia with lower urinary tract symptoms',status:'CC',cat:'uro',hac:false},
+  {code:'N31.9',  dx:'Neuromuscular dysfunction of bladder, unspecified',status:'CC',  cat:'uro',  hac:false},
+  {code:'C64.1',  dx:'Malignant neoplasm of right kidney',               status:'MCC', cat:'uro',  hac:false},
+  {code:'C64.2',  dx:'Malignant neoplasm of left kidney',                status:'MCC', cat:'uro',  hac:false},
+  {code:'C67.9',  dx:'Malignant neoplasm of bladder, unspecified',       status:'MCC', cat:'uro',  hac:false},
+  {code:'C61',    dx:'Malignant neoplasm of prostate',                   status:'CC',  cat:'uro',  hac:false},
+  {code:'N99.0',  dx:'Post-procedural (acute) kidney failure',           status:'MCC', cat:'uro',  hac:false},
+  {code:'N99.89', dx:'Other postprocedural complications of genitourinary system',status:'CC',cat:'uro',hac:false},
+  // Ophthalmology
+  {code:'H33.001',dx:'Unspecified retinal detachment with retinal break, right eye',status:'CC',cat:'oph',hac:false},
+  {code:'H33.002',dx:'Unspecified retinal detachment with retinal break, left eye',status:'CC',cat:'oph',hac:false},
+  {code:'H33.40', dx:'Traction retinal detachment without retinal break',status:'CC',  cat:'oph',  hac:false},
+  {code:'H35.721',dx:'Macular hole, right eye, stage 3',                 status:'CC',  cat:'oph',  hac:false},
+  {code:'H35.81', dx:'Retinal edema',                                    status:'Non-CC',cat:'oph', hac:false},
+  {code:'H40.1110',dx:'Primary open-angle glaucoma, right eye, stage unspecified',status:'CC',cat:'oph',hac:false},
+  {code:'H40.211',dx:'Acute angle-closure glaucoma, right eye',          status:'CC',  cat:'oph',  hac:false},
+  {code:'H26.001',dx:'Unspecified infantile and juvenile cataract, right eye',status:'CC',cat:'oph',hac:false},
+  {code:'H26.131',dx:'Anterior subcapsular polar juvenile cataract, right eye',status:'CC',cat:'oph',hac:false},
+  {code:'H59.011',dx:'Keratopathy following cataract surgery, right eye',status:'CC',  cat:'oph',  hac:false},
+  {code:'H59.121',dx:'Cataract due to ocular surgery, right eye',        status:'CC',  cat:'oph',  hac:false},
+  {code:'H44.121',dx:'Parasitic endophthalmitis, right eye',             status:'MCC', cat:'oph',  hac:false},
+  {code:'H44.001',dx:'Unspecified purulent endophthalmitis, right eye',  status:'MCC', cat:'oph',  hac:false},
+  // OTO
+  {code:'H90.3',  dx:'Sensorineural hearing loss, bilateral',            status:'CC',  cat:'oto',  hac:false},
+  {code:'H90.0',  dx:'Conductive hearing loss, bilateral',               status:'CC',  cat:'oto',  hac:false},
+  {code:'H66.001',dx:'Acute suppurative otitis media, right ear',        status:'CC',  cat:'oto',  hac:false},
+  {code:'H66.3X1',dx:'Other chronic suppurative otitis media, right ear',status:'CC',  cat:'oto',  hac:false},
+  {code:'J01.90', dx:'Acute sinusitis, unspecified',                     status:'CC',  cat:'oto',  hac:false},
+  {code:'J32.9',  dx:'Chronic sinusitis, unspecified',                   status:'Non-CC',cat:'oto', hac:false},
+  {code:'J38.01', dx:'Paralysis of vocal cords and larynx, unilateral',  status:'CC',  cat:'oto',  hac:false},
+  {code:'J96.00', dx:'Acute respiratory failure — post-tracheostomy',    status:'MCC', cat:'oto',  hac:false},
+  {code:'C32.9',  dx:'Malignant neoplasm of larynx, unspecified',        status:'MCC', cat:'oto',  hac:false},
+  {code:'C10.9',  dx:'Malignant neoplasm of oropharynx, unspecified',    status:'MCC', cat:'oto',  hac:false},
+  {code:'H83.01', dx:'Labyrinthitis, right ear',                         status:'CC',  cat:'oto',  hac:false},
+  {code:'H81.01', dx:'Ménière\'s disease, right ear',                    status:'CC',  cat:'oto',  hac:false},
+];
+
+let ccmccCatFilter = 'all';
+let ccmccStatusFilter = 'all';
+
+function renderCCMCC(data) {
+  const tbody = document.getElementById('ccmccBody');
+  const count = document.getElementById('ccmccCount');
+  tbody.innerHTML = data.map(d => `
+    <tr>
+      <td class="ccmcc-code">${d.code}</td>
+      <td style="font-size:0.88em; color:var(--text);">${d.dx}${d.hac ? '<span class="ccmcc-badge hac" style="margin-left:6px;">HAC</span>':''}</td>
+      <td><span class="ccmcc-badge ${d.status==='MCC'?'mcc':d.status==='CC'?'cc':'none'}">${d.status}</span></td>
+      <td style="font-size:0.78em; color:var(--muted);">${{gen:'General',uro:'Urology',oph:'Ophthalmology',oto:'OTO'}[d.cat]||d.cat}</td>
+    </tr>
+  `).join('');
+  count.textContent = `Showing ${data.length} of ${ccmccData.length} diagnoses`;
+}
+
+function filterCCMCC() {
+  const q = document.getElementById('ccmccSearch').value.toLowerCase();
+  const filtered = ccmccData.filter(d => {
+    const matchQ = !q || d.code.toLowerCase().includes(q) || d.dx.toLowerCase().includes(q);
+    const matchStatus = ccmccStatusFilter==='all' || (ccmccStatusFilter==='HAC' ? d.hac : d.status===ccmccStatusFilter);
+    const matchCat = (ccmccCatFilter==='all') || (ccmccCatFilter==='HAC' ? d.hac : d.cat===ccmccCatFilter);
+    return matchQ && matchStatus && matchCat;
+  });
+  renderCCMCC(filtered);
+}
+
+function ccmccFilter(btn, val) {
+  document.querySelectorAll('.ccmcc-filter-row .filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const statusVals = ['MCC','CC','Non-CC','HAC'];
+  const catVals = ['uro','oph','oto'];
+  if (val==='all') { ccmccStatusFilter='all'; ccmccCatFilter='all'; }
+  else if (statusVals.includes(val)) { ccmccStatusFilter=val; ccmccCatFilter='all'; }
+  else if (catVals.includes(val)) { ccmccCatFilter=val; ccmccStatusFilter='all'; }
+  else { ccmccCatFilter=val; ccmccStatusFilter='all'; }
+  filterCCMCC();
+}
+
+// ===== ABSTRACTING CHECKLIST =====
+const clData = [
+  { section:'📋 Chart Review & Setup', items:[
+    { text:'Patient demographics, admission date, and discharge date confirmed', note:'Verify MRN, DOS, and attending on file' },
+    { text:'Admitting diagnosis vs. discharge diagnosis reviewed', note:'These should align — flag discrepancies for query' },
+    { text:'All physician documentation reviewed (H&P, progress notes, discharge summary, consult notes)', flag:'Required' },
+    { text:'Operative reports reviewed for all procedures performed', flag:'Required', flagType:'red' },
+    { text:'Pathology, radiology, and lab reports cross-referenced with physician documentation' },
+    { text:'Teaching physician attestation present and compliant (if resident involved)', flag:'MCW' },
+  ]},
+  { section:'🎯 Principal Diagnosis', items:[
+    { text:'Principal diagnosis is the condition established after study to be chiefly responsible for the admission (UHDDS definition)', flag:'Required', flagType:'red' },
+    { text:'Symptoms not used as principal diagnosis when the underlying condition is confirmed' },
+    { text:'If two conditions equally meet the definition, either may be sequenced first' },
+    { text:'Principal diagnosis does not change solely based on DRG optimization — must be clinically supported' },
+    { text:'Query sent if principal diagnosis is unclear, conflicting, or not documented in discharge summary', flag:'Query?' },
+  ]},
+  { section:'🔗 Secondary Diagnoses (CC/MCC)', items:[
+    { text:'All conditions that affected care, treatment, or LOS captured as secondary diagnoses' },
+    { text:'CC/MCC status checked for all secondary diagnoses — high-impact diagnoses verified in record' },
+    { text:'Chronic conditions affecting current care included even if not actively treated this visit' },
+    { text:'Conditions from prior admissions excluded unless they affected current care' },
+    { text:'Malnutrition — dietitian note + physician documentation reviewed; severity queried if needed', flag:'Query?' },
+    { text:'Sepsis / septic shock — source and severity confirmed; query sent if documented inconsistently', flag:'Query?' },
+    { text:'Encephalopathy type confirmed — metabolic, toxic, septic, hepatic; delirium vs. encephalopathy clarified', flag:'Query?' },
+    { text:'AKI staging confirmed — KDIGO criteria applied; ATN vs. AKI queried if needed', flag:'Query?' },
+    { text:'Respiratory failure type confirmed — hypoxic (Type I) vs. hypercapnic (Type II); acute vs. chronic', flag:'Query?' },
+    { text:'Anemia type and etiology confirmed and coded specifically', flag:'Query?' },
+    { text:'Heart failure type (systolic/diastolic) and acuity (acute/chronic) confirmed', flag:'Query?' },
+  ]},
+  { section:'📍 POA Indicators', items:[
+    { text:'POA indicator assigned to every reportable secondary diagnosis', flag:'Required', flagType:'red' },
+    { text:'Conditions present in the ED prior to admission order = Y', note:'ED is outpatient; condition present there = POA' },
+    { text:'Chronic conditions on problem list = Y even if not actively treated' },
+    { text:'HAC-listed conditions verified — POA=N triggers payment implications', flag:'HAC', flagType:'red' },
+    { text:'Pressure ulcers — admission skin assessment reviewed; stage documented on admission', flag:'HAC', flagType:'red' },
+    { text:'CAUTI, CLABSI, SSI — reviewed for POA timing; HAC implications flagged', flag:'HAC', flagType:'red' },
+    { text:'U or W assigned when POA cannot be determined; query sent when clinically significant', flag:'Query?' },
+  ]},
+  { section:'🔧 Procedures (ICD-10-PCS)', items:[
+    { text:'All significant procedures coded — OR procedures, endoscopies, interventions', flag:'Required', flagType:'red' },
+    { text:'Operative report reviewed for correct root operation, approach, body part, and device', flag:'Required', flagType:'red' },
+    { text:'Approach confirmed — open vs. endoscopic vs. percutaneous vs. via natural opening' },
+    { text:'Device left in place documented — stents, drains, implants, grafts' },
+    { text:'Procedure specificity query sent if operative report is vague or approach is unclear', flag:'Query?' },
+    { text:'Bilateral procedures coded correctly — bilateral body part values vs. two codes' },
+    { text:'Diagnostic vs. therapeutic distinction applied for endoscopic procedures' },
+  ]},
+  { section:'💊 Specialty — Urology', items:[
+    { text:'Hydronephrosis — laterality and obstruction etiology coded (stone, stricture, BPH)' },
+    { text:'Calculus — exact location (kidney/ureter/bladder) and laterality specified' },
+    { text:'Urinary retention — type (acute/chronic) and etiology documented' },
+    { text:'Post-procedural complications vs. expected outcomes queried if ambiguous', flag:'Query?' },
+    { text:'CKD staging confirmed with physician documentation — GFR alone insufficient' },
+  ]},
+  { section:'👁 Specialty — Ophthalmology', items:[
+    { text:'Cataract type and complexity confirmed — routine (66984) vs. complex (66982)' },
+    { text:'Laterality specified for all eye diagnoses and procedures (right/left/bilateral)' },
+    { text:'Retinal detachment type confirmed — rhegmatogenous vs. tractional vs. exudative' },
+    { text:'Glaucoma type and stage coded — ICD-10-CM 7th character required', flag:'Required', flagType:'red' },
+    { text:'Post-operative complications documented and coded separately with complication codes (H59)' },
+  ]},
+  { section:'👂 Specialty — OTO', items:[
+    { text:'Hearing loss type (conductive/SNHL/mixed) and laterality confirmed' },
+    { text:'Sinus procedure — specific sinuses treated documented in operative note' },
+    { text:'Tracheostomy indication and type confirmed — planned vs. emergency affects CPT/PCS' },
+    { text:'OTO laterality confirmed for all diagnoses and procedures', flag:'Required', flagType:'red' },
+  ]},
+  { section:'✅ Final Review', items:[
+    { text:'Discharge summary reviewed last — principal diagnosis consistent with body of chart' },
+    { text:'DRG assignment reviewed — CC/MCC impact verified; no obvious missed diagnoses' },
+    { text:'All open queries tracked — resolution documented before case is finalized', flag:'Required', flagType:'red' },
+    { text:'Teaching physician documentation complete if GC modifier used', flag:'MCW' },
+    { text:'2-Midnight documentation adequate if inpatient status was challenged' },
+    { text:'Case reviewed, coded, and ready for submission', flag:'Done!' },
+  ]},
+];
+
+function buildChecklist() {
+  const container = document.getElementById('clSections');
+  container.innerHTML = clData.map((sec, si) => `
+    <div class="card cl-section" data-section="${si}">
+      <div class="cl-section-title">${sec.section}</div>
+      ${sec.items.map((item, ii) => `
+        <div class="cl-item" id="cl-${si}-${ii}" onclick="toggleCL(${si},${ii})">
+          <div class="cl-checkbox"><span class="cl-checkmark">✓</span></div>
+          <div>
+            <div class="cl-text">${item.text}${item.flag ? `<span class="cl-flag${item.flagType==='red'?' red':''}">${item.flag}</span>`:''}
+            </div>
+            ${item.note ? `<div class="cl-note">${item.note}</div>`:''}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+  updateCLProgress();
+}
+
+function toggleCL(si, ii) {
+  const el = document.getElementById(`cl-${si}-${ii}`);
+  el.classList.toggle('checked');
+  updateCLProgress();
+}
+
+function updateCLProgress() {
+  const total = document.querySelectorAll('.cl-item').length;
+  const done  = document.querySelectorAll('.cl-item.checked').length;
+  document.getElementById('clProgressText').textContent = `${done} / ${total} complete`;
+  document.getElementById('clProgressBar').style.width = total ? (done/total*100).toFixed(0)+'%' : '0%';
+}
+
+function resetChecklist() {
+  if (!confirm('Reset all checklist items?')) return;
+  document.querySelectorAll('.cl-item').forEach(el => el.classList.remove('checked'));
+  document.getElementById('clPatient').value = '';
+  document.getElementById('clNotes').value = '';
+  updateCLProgress();
+}
+
+// ===== GLOBAL SURGERY DATA =====
+const globalData = [
+  // Urology
+  {cpt:'52000',desc:'Cystourethroscopy',global:'000',spec:'uro'},
+  {cpt:'52204',desc:'Cystourethroscopy with biopsy',global:'000',spec:'uro'},
+  {cpt:'52310',desc:'Cystourethroscopy with removal of foreign body/calculus/stent; simple',global:'000',spec:'uro'},
+  {cpt:'52332',desc:'Cystourethroscopy with insertion of indwelling ureteral stent',global:'000',spec:'uro'},
+  {cpt:'52353',desc:'Ureteroscopy with lithotripsy',global:'000',spec:'uro'},
+  {cpt:'52356',desc:'Ureteroscopy with lithotripsy and stent insertion',global:'000',spec:'uro'},
+  {cpt:'52601',desc:'TURP, complete',global:'090',spec:'uro'},
+  {cpt:'52648',desc:'Laser vaporization of prostate (PVP)',global:'090',spec:'uro'},
+  {cpt:'50080',desc:'PCNL up to 2cm',global:'090',spec:'uro'},
+  {cpt:'50081',desc:'PCNL over 2cm',global:'090',spec:'uro'},
+  {cpt:'50590',desc:'Extracorporeal shock wave lithotripsy (ESWL)',global:'000',spec:'uro'},
+  {cpt:'50230',desc:'Radical nephrectomy with lymphadenectomy',global:'090',spec:'uro'},
+  {cpt:'50240',desc:'Nephrectomy, partial',global:'090',spec:'uro'},
+  {cpt:'50543',desc:'Laparoscopic partial nephrectomy',global:'090',spec:'uro'},
+  {cpt:'50545',desc:'Laparoscopic radical nephrectomy',global:'090',spec:'uro'},
+  {cpt:'55840',desc:'Radical retropubic prostatectomy',global:'090',spec:'uro'},
+  {cpt:'55866',desc:'Laparoscopic radical prostatectomy (robotic)',global:'090',spec:'uro'},
+  {cpt:'55700',desc:'Prostate needle biopsy',global:'000',spec:'uro'},
+  {cpt:'51040',desc:'Cystostomy with drainage',global:'010',spec:'uro'},
+  // Ophthalmology
+  {cpt:'66984',desc:'Extracapsular cataract removal with IOL (routine)',global:'090',spec:'oph'},
+  {cpt:'66982',desc:'Extracapsular cataract removal with IOL (complex)',global:'090',spec:'oph'},
+  {cpt:'66821',desc:'YAG laser posterior capsulotomy',global:'090',spec:'oph'},
+  {cpt:'67028',desc:'Intravitreal injection of pharmacological agent',global:'000',spec:'oph'},
+  {cpt:'67036',desc:'Vitrectomy, pars plana approach',global:'090',spec:'oph'},
+  {cpt:'67041',desc:'Vitrectomy with removal of preretinal membrane (macular pucker)',global:'090',spec:'oph'},
+  {cpt:'67108',desc:'Repair of retinal detachment with vitrectomy',global:'090',spec:'oph'},
+  {cpt:'66170',desc:'Trabeculectomy ab externo (glaucoma)',global:'090',spec:'oph'},
+  {cpt:'66180',desc:'Aqueous shunt to extraocular reservoir',global:'090',spec:'oph'},
+  {cpt:'65750',desc:'Keratoplasty, penetrating (PKP)',global:'090',spec:'oph'},
+  {cpt:'67904',desc:'Repair of blepharoptosis, levator resection',global:'090',spec:'oph'},
+  // OTO
+  {cpt:'42820',desc:'Tonsillectomy and adenoidectomy, under 12',global:'010',spec:'oto'},
+  {cpt:'42821',desc:'Tonsillectomy and adenoidectomy, 12 and over',global:'010',spec:'oto'},
+  {cpt:'69436',desc:'Tympanostomy with ventilating tube, general anesthesia',global:'010',spec:'oto'},
+  {cpt:'31254',desc:'Nasal/sinus endoscopy with partial ethmoidectomy',global:'010',spec:'oto'},
+  {cpt:'31255',desc:'Nasal/sinus endoscopy with total ethmoidectomy',global:'010',spec:'oto'},
+  {cpt:'31267',desc:'Nasal/sinus endoscopy with maxillary antrostomy and tissue removal',global:'010',spec:'oto'},
+  {cpt:'30520',desc:'Septoplasty',global:'090',spec:'oto'},
+  {cpt:'31600',desc:'Tracheostomy, planned',global:'010',spec:'oto'},
+  {cpt:'31603',desc:'Tracheostomy, emergency transtracheal',global:'010',spec:'oto'},
+  {cpt:'69930',desc:'Cochlear implant with mastoidectomy',global:'090',spec:'oto'},
+  {cpt:'42410',desc:'Excision of parotid tumor, lateral lobe',global:'090',spec:'oto'},
+  // General
+  {cpt:'99232',desc:'Subsequent hospital care (moderate MDM)',global:'MMM',spec:'gen'},
+  {cpt:'99223',desc:'Initial hospital care (high MDM)',global:'MMM',spec:'gen'},
+  {cpt:'10060',desc:'Incision and drainage of abscess, simple',global:'010',spec:'gen'},
+  {cpt:'10061',desc:'Incision and drainage of abscess, complicated',global:'010',spec:'gen'},
+  {cpt:'12001',desc:'Simple repair of superficial wounds, up to 2.5cm',global:'010',spec:'gen'},
+  {cpt:'99291',desc:'Critical care, first 30–74 minutes',global:'MMM',spec:'gen'},
+];
+
+function renderGlobal(data) {
+  const tbody = document.getElementById('globalBody');
+  const labelMap = {gen:'General',uro:'Urology',oph:'Ophthalmology',oto:'OTO'};
+  tbody.innerHTML = data.map(d => {
+    const gc = {'090':'g090','010':'g010','000':'g000','MMM':'gMMM'}[d.global]||'gMMM';
+    return `<tr><td class="cpt-code">${d.cpt}</td><td style="font-size:0.86em;">${d.desc}</td><td><span class="global-badge ${gc}">${d.global}</span></td><td style="font-size:0.78em;color:var(--muted);">${labelMap[d.spec]||d.spec}</td></tr>`;
+  }).join('');
+}
+
+function filterGlobal() {
+  const q = document.getElementById('globalSearch').value.toLowerCase();
+  const filtered = q ? globalData.filter(d => d.cpt.includes(q) || d.desc.toLowerCase().includes(q)) : globalData;
+  renderGlobal(filtered);
+}
+
+// ===== NCCI DATA =====
+const ncciData = [
+  // UROLOGY
+  {col1:'52332',col2:'52310',desc:'Ureteral stent insertion bundles simple foreign body/stent removal — bill stent insertion only when both performed through same cystoscopy.',modAllowed:true, modNote:'Modifier 59/XS if separate ureter or distinct session',spec:'uro'},
+  {col1:'52353',col2:'52332',desc:'Ureteroscopy with lithotripsy bundles ureteral stent insertion. If stent placed during same ureteroscopy, it is bundled into 52353.',modAllowed:false,modNote:'Stent placement is integral to ureteroscopy with lithotripsy',spec:'uro'},
+  {col1:'52356',col2:'52353',desc:'52356 (ureteroscopy + lithotripsy + stent) is the comprehensive code; 52353 is bundled. Bill 52356 when stent is placed.',modAllowed:false,modNote:'52356 is the complete service — do not also bill 52353',spec:'uro'},
+  {col1:'52601',col2:'52000',desc:'TURP bundles diagnostic cystourethroscopy. The cystoscopic component is inherent to TURP.',modAllowed:false,modNote:'Cystoscopy integral to TURP — cannot separately bill 52000',spec:'uro'},
+  {col1:'50081',col2:'50080',desc:'PCNL over 2cm (50081) bundles PCNL up to 2cm (50080). Bill only the highest-level PCNL code.',modAllowed:false,modNote:'Do not report both; 50081 is the complete service',spec:'uro'},
+  {col1:'55866',col2:'55840',desc:'Laparoscopic radical prostatectomy (55866) bundles open radical prostatectomy (55840). Bill the approach actually used.',modAllowed:false,modNote:'Cannot bill both; approach determines the code',spec:'uro'},
+  {col1:'50545',col2:'50240',desc:'Laparoscopic radical nephrectomy (50545) and open radical nephrectomy (50240) cannot both be billed for same kidney on same date.',modAllowed:false,modNote:'Approach determines which code is reported',spec:'uro'},
+  {col1:'52000',col2:'52204',desc:'Diagnostic cystoscopy (52000) is bundled when a surgical cystoscopy (52204 biopsy) is performed on the same date.',modAllowed:true, modNote:'Modifier 59/XE if a truly separate diagnostic cystoscopy was medically necessary and separately documented',spec:'uro'},
+  // OPHTHALMOLOGY
+  {col1:'66984',col2:'66850',desc:'Routine cataract extraction (66984) bundles phacofragmentation (66850). Only one code for the cataract removal technique.',modAllowed:false,modNote:'66984 is the complete service including phacoemulsification',spec:'oph'},
+  {col1:'66982',col2:'66984',desc:'Complex cataract (66982) and routine cataract (66984) cannot be billed together for the same eye on the same date.',modAllowed:false,modNote:'Bill the appropriate complexity level — not both',spec:'oph'},
+  {col1:'67028',col2:'67030',desc:'Intravitreal injection (67028) bundles laser treatment for retinal lesion if performed same session same eye.',modAllowed:true, modNote:'Modifier 59/XS if separate eye or separately documented distinct service',spec:'oph'},
+  {col1:'66170',col2:'66172',desc:'Two trabeculectomy codes (66170 and 66172) cannot be billed together for the same eye on the same date.',modAllowed:false,modNote:'Bill the code that reflects the complexity of the procedure performed',spec:'oph'},
+  {col1:'67108',col2:'67036',desc:'Retinal detachment repair with vitrectomy (67108) bundles vitrectomy alone (67036). Report 67108 as the comprehensive code.',modAllowed:false,modNote:'67108 includes the vitrectomy component',spec:'oph'},
+  {col1:'66180',col2:'66170',desc:'Aqueous shunt (66180) and trabeculectomy (66170) cannot be reported together for the same eye on the same date.',modAllowed:true, modNote:'Modifier 59/XS if procedures on different eyes; otherwise not separately payable',spec:'oph'},
+  {col1:'67904',col2:'67900',desc:'Levator resection for ptosis (67904) bundles brow ptosis repair (67900) for same side. Two distinct procedures on same eyelid not separately payable without modifier.',modAllowed:true, modNote:'Modifier 59/XS if separate anatomic site (different eyelid)',spec:'oph'},
+  // OTO
+  {col1:'42820',col2:'42825',desc:'Tonsillectomy and adenoidectomy (42820/42821) bundles standalone tonsillectomy (42825/42826). Bill the combined code.',modAllowed:false,modNote:'42820 includes tonsillectomy; do not also bill 42825',spec:'oto'},
+  {col1:'42820',col2:'42830',desc:'Tonsillectomy and adenoidectomy (42820) bundles standalone adenoidectomy (42830/42831). Bill the combined T&A code.',modAllowed:false,modNote:'42820 is the comprehensive code; 42830 is bundled',spec:'oto'},
+  {col1:'31255',col2:'31254',desc:'Total ethmoidectomy (31255) bundles partial ethmoidectomy (31254). Report 31255 when total ethmoidectomy is completed.',modAllowed:false,modNote:'31255 is the comprehensive code including anterior and posterior ethmoid work',spec:'oto'},
+  {col1:'31267',col2:'31256',desc:'Maxillary antrostomy with tissue removal (31267) bundles maxillary antrostomy without tissue removal (31256).',modAllowed:false,modNote:'Bill the more comprehensive code (31267) when tissue removal performed',spec:'oto'},
+  {col1:'30520',col2:'30140',desc:'Septoplasty (30520) bundles submucous resection (30140) when performed through the same approach on the same date.',modAllowed:true, modNote:'Modifier 59 may apply if turbinate and septal work are truly distinct and separately documented',spec:'oto'},
+  {col1:'69436',col2:'69421',desc:'Tympanostomy with tube (69436) bundles myringotomy alone (69421). Bill 69436 when a tube is inserted.',modAllowed:false,modNote:'Myringotomy is integral to tympanostomy tube insertion',spec:'oto'},
+  // GENERAL
+  {col1:'99233',col2:'99232',desc:'E/M codes within the same category cannot be billed together on the same date by the same provider. Only one level of subsequent hospital care per day.',modAllowed:false,modNote:'One E/M per provider per day per encounter type',spec:'gen'},
+  {col1:'99223',col2:'99232',desc:'Initial hospital care (99221-99223) and subsequent hospital care (99231-99233) cannot both be billed on the same date by the same physician.',modAllowed:false,modNote:'Bill initial care code for the admission date; subsequent for all following dates',spec:'gen'},
+  {col1:'36556',col2:'36000',desc:'Central venous catheter insertion (36556) bundles peripheral IV placement (36000). Do not separately bill IV access when placing a CVC.',modAllowed:false,modNote:'IV access is integral to CVC placement procedure',spec:'gen'},
+];
+
+function renderNcci(data) {
+  const list = document.getElementById('ncciList');
+  const specLabels = {uro:'🫘 Urology',oph:'👁 Ophthalmology',oto:'👂 OTO',gen:'General'};
+  list.innerHTML = data.map(d => `
+    <div class="ncci-pair" data-spec="${d.spec}">
+      <div class="ncci-codes">
+        <span class="ncci-col-code">${d.col1}</span>
+        <span class="ncci-plus">+</span>
+        <span class="ncci-bundled-code">${d.col2}</span>
+        <span class="ncci-specialty-tag">${specLabels[d.spec]||d.spec}</span>
+        <span class="ncci-modifier ${d.modAllowed?'allowed':'notallowed'}">${d.modAllowed?'✓ Modifier May Unbundle':'✗ Modifier Cannot Unbundle'}</span>
+      </div>
+      <div class="ncci-desc">${d.desc}</div>
+      ${d.modNote?`<div style="font-size:0.78em; color:var(--gold); margin-top:4px; padding:4px 8px; background:rgba(232,197,71,0.06); border-radius:4px; border-left:2px solid var(--gold);">📌 ${d.modNote}</div>`:''}
+    </div>
+  `).join('');
+}
+
+let ncciCatFilter = 'all';
+function filterNcci() {
+  const q = document.getElementById('ncciSearch').value.toLowerCase();
+  document.querySelectorAll('.ncci-pair').forEach(el => {
+    const text = el.innerText.toLowerCase();
+    const spec = el.dataset.spec;
+    const matchQ = !q || text.includes(q);
+    const matchCat = ncciCatFilter==='all' || spec===ncciCatFilter;
+    el.classList.toggle('hidden', !(matchQ && matchCat));
+  });
+}
+function ncciFilter(btn, val) {
+  document.querySelectorAll('.ccmcc-filter-row .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  ncciCatFilter = val;
+  filterNcci();
+}
+
 // ===== INIT =====
 updateUI();
 buildQueryDropdown();
 updateQueryForm();
 renderCard();
+renderCCMCC(ccmccData);
+buildChecklist();
+renderGlobal(globalData);
+renderNcci(ncciData);
+// Set first page active group highlight
+document.getElementById('grp-calc')?.classList.add('active');
 </script>
 </body>
 </html>
