@@ -811,6 +811,7 @@
   }
   .nav-dropdown-btn:hover, .nav-dropdown-btn.active { color: var(--primary); background: var(--primary-glow); }
   .nav-dropdown-btn .arrow { font-size: 0.7em; transition: transform 0.2s; }
+.nav-dropdown-menu.open { display: block; }
   .nav-dropdown-menu {
     display: none;
     position: absolute;
@@ -824,7 +825,6 @@
     z-index: 999;
     overflow: hidden;
   }
-  .nav-dropdown-menu.open { display: block; }
   .nav-dropdown-btn.open .arrow { transform: rotate(180deg); }
   .nav-dropdown-menu a {
     display: block;
@@ -965,7 +965,6 @@
 <body>
 
 <nav class="navbar">
-  <nav class="navbar">
   <span class="nav-brand">MCW // PROFEE</span>
 
   <div class="nav-dropdown">
